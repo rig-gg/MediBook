@@ -1,0 +1,21 @@
+# --- Java / Maven / IntelliJ ---
+backend/target/
+backend/.idea/
+*.iml
+.idea/
+*.class
+
+# --- Node / Vite / React ---
+web/node_modules/
+web/dist/
+web/.vite/
+
+# --- Environment secrets ---
+.env
+.env.local
+*.env
+backend/src/main/resources/application-local.properties
+
+# --- OS junk ---
+.DS_Store
+Thumbs.db
