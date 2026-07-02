@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="medibook_primary">#0F5C57</color>
+    <color name="medibook_primary_dark">#0A3F3C</color>
+    <color name="medibook_accent">#E8724C</color>
+    <color name="medibook_background">#F7F7F5</color>
+    <color name="medibook_surface">#FFFFFF</color>
+    <color name="medibook_ink">#1B2B2B</color>
+    <color name="medibook_ink_soft">#5C6B6B</color>
+    <color name="medibook_border">#E4E3DE</color>
+    <color name="medibook_error">#C1432B</color>
+</resources>

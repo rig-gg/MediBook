@@ -5,6 +5,8 @@ import edu.cit.amihan.medibook.auth.dto.LoginRequest;
 import edu.cit.amihan.medibook.auth.dto.RegisterRequest;
 import edu.cit.amihan.medibook.doctor.entity.Doctor;
 import edu.cit.amihan.medibook.doctor.repository.DoctorRepository;
+import edu.cit.amihan.medibook.patient.entity.Patient;
+import edu.cit.amihan.medibook.patient.repository.PatientRepository;
 import edu.cit.amihan.medibook.security.JwtUtil;
 import edu.cit.amihan.medibook.user.entity.Role;
 import edu.cit.amihan.medibook.user.entity.User;
@@ -23,10 +25,11 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
-    // Public login — works for ADMIN, STAFF, DOCTOR
+    // Public login — works for ADMIN, STAFF, DOCTOR, PATIENT
     @PostMapping("/api/auth/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         authenticationManager.authenticate(
@@ -40,6 +43,42 @@ public class AuthController {
 
         return ResponseEntity.ok(new AuthResponse(
                 token, user.getUserId(), user.getUsername(), user.getFullName(), user.getRole()
+        ));
+    }
+
+    // Public — open patient self-registration (BR-005), used by the Android app
+    @PostMapping("/api/auth/register/patient")
+    public ResponseEntity<?> registerPatient(@RequestBody RegisterRequest request) {
+        if (userRepository.existsByUsername(request.getUsername())) {
+            return ResponseEntity.badRequest().body("Username already taken.");
+        }
+        if (userRepository.existsByEmail(request.getEmail())) {
+            return ResponseEntity.badRequest().body("Email already registered.");
+        }
+
+        User user = User.builder()
+                .username(request.getUsername())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .email(request.getEmail())
+                .fullName(request.getFullName())
+                .role(Role.PATIENT)
+                .build();
+
+        User savedUser = userRepository.save(user);
+
+        Patient patient = Patient.builder()
+                .user(savedUser)
+                .fullName(request.getFullName())
+                .dateOfBirth(request.getDateOfBirth())
+                .contactNumber(request.getContactNumber())
+                .address(request.getAddress())
+                .build();
+        patientRepository.save(patient);
+
+        String token = jwtUtil.generateToken(savedUser);
+
+        return ResponseEntity.ok(new AuthResponse(
+                token, savedUser.getUserId(), savedUser.getUsername(), savedUser.getFullName(), savedUser.getRole()
         ));
     }
 
@@ -71,7 +110,7 @@ public class AuthController {
 
         if (request.getRole() == Role.DOCTOR) {
             Doctor doctor = Doctor.builder()
-                    .user(savedUser) // adjust if your Doctor entity uses userId instead of a relation
+                    .user(savedUser)
                     .fullName(request.getFullName())
                     .specialization(request.getSpecialization())
                     .contactNumber(request.getContactNumber())

@@ -3,6 +3,8 @@ package edu.cit.amihan.medibook.auth.dto;
 import edu.cit.amihan.medibook.user.entity.Role;
 import lombok.Data;
 
+import java.time.LocalDate;
+
 @Data
 public class RegisterRequest {
     private String username;
@@ -14,4 +16,8 @@ public class RegisterRequest {
     // Only used when role == DOCTOR
     private String specialization;
     private String contactNumber;
+
+    // Only used for patient self-registration
+    private LocalDate dateOfBirth;
+    private String address;
 }
