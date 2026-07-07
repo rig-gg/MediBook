@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { registerAccount } from '../auth/authService';
+import { registerAccount } from '../services/authService';
 import AuthLayout from '../layouts/AuthLayout';
 
 const inputClasses =
