@@ -1,11 +1,14 @@
 package edu.cit.amihan.medibook.ui.doctor
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import edu.cit.amihan.medibook.databinding.ActivityDoctorListBinding
 import edu.cit.amihan.medibook.network.RetrofitClient
+import edu.cit.amihan.medibook.ui.appointment.AppointmentHistoryActivity
+import edu.cit.amihan.medibook.ui.schedule.DoctorScheduleListActivity
 import kotlinx.coroutines.launch
 
 class DoctorListActivity : AppCompatActivity() {
@@ -18,13 +21,22 @@ class DoctorListActivity : AppCompatActivity() {
         binding = ActivityDoctorListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        adapter = DoctorAdapter(emptyList())
+        adapter = DoctorAdapter(emptyList()) { doctor ->
+            val intent = Intent(this, DoctorScheduleListActivity::class.java)
+            intent.putExtra("doctorId", doctor.doctorId)
+            intent.putExtra("doctorName", doctor.fullName)
+            startActivity(intent)
+        }
         binding.rvDoctors.layoutManager = LinearLayoutManager(this)
         binding.rvDoctors.adapter = adapter
 
         binding.btnSearch.setOnClickListener {
             val query = binding.etSearchSpecialization.text.toString().trim()
             fetchDoctors(query)
+        }
+
+        binding.btnMyAppointments.setOnClickListener {
+            startActivity(Intent(this, AppointmentHistoryActivity::class.java))
         }
 
         fetchDoctors()
