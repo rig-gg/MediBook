@@ -6,8 +6,10 @@ import androidx.recyclerview.widget.RecyclerView
 import edu.cit.amihan.medibook.databinding.ItemDoctorBinding
 import edu.cit.amihan.medibook.model.Doctor
 
-class DoctorAdapter(private var doctors: List<Doctor>) :
-    RecyclerView.Adapter<DoctorAdapter.DoctorViewHolder>() {
+class DoctorAdapter(
+    private var doctors: List<Doctor>,
+    private val onDoctorClick: (Doctor) -> Unit
+) : RecyclerView.Adapter<DoctorAdapter.DoctorViewHolder>() {
 
     inner class DoctorViewHolder(val binding: ItemDoctorBinding) :
         RecyclerView.ViewHolder(binding.root)
@@ -24,6 +26,7 @@ class DoctorAdapter(private var doctors: List<Doctor>) :
         holder.binding.tvDoctorName.text = doctor.fullName
         holder.binding.tvSpecialization.text = doctor.specialization ?: "General"
         holder.binding.tvContact.text = "${doctor.contactNumber ?: ""}  •  ${doctor.email}"
+        holder.binding.root.setOnClickListener { onDoctorClick(doctor) }
     }
 
     override fun getItemCount(): Int = doctors.size
