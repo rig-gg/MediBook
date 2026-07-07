@@ -2,12 +2,11 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from '../pages/LoginPage';
 import AdminRegisterPage from '../pages/AdminRegisterPage';
 import ProtectedRoute from '../components/ProtectedRoute';
+import DashboardLayout from '../layouts/DashboardLayout';
+import DoctorListPage from '../pages/doctors/DoctorListPage';
 
-// Simple placeholder so DOCTOR/STAFF have somewhere to land after login
-const DashboardPlaceholder = () => (
-  <div className="min-h-screen flex items-center justify-center bg-slate-100">
-    <p className="text-slate-600 text-sm">Dashboard coming soon.</p>
-  </div>
+const DashboardHome = () => (
+  <div className="text-slate-600 text-sm">Welcome to your MediBook dashboard.</div>
 );
 
 const AppRoutes = () => {
@@ -26,13 +25,15 @@ const AppRoutes = () => {
       />
 
       <Route
-        path="/dashboard"
         element={
           <ProtectedRoute allowedRoles={['ADMIN', 'STAFF', 'DOCTOR']}>
-            <DashboardPlaceholder />
+            <DashboardLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route path="/dashboard" element={<DashboardHome />} />
+        <Route path="/doctors" element={<DoctorListPage />} />
+      </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />
     </Routes>
