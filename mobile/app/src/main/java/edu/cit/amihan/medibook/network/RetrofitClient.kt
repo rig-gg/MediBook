@@ -7,8 +7,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitClient {
 
-    // 10.0.2.2 = special alias the Android Emulator uses to reach your host
-    // machine's localhost. Only works on the emulator, not physical devices.
     private const val BASE_URL = "http://10.0.2.2:8080/"
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
@@ -16,6 +14,7 @@ object RetrofitClient {
     }
 
     private val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor(AuthInterceptor())
         .addInterceptor(loggingInterceptor)
         .build()
 
@@ -26,4 +25,5 @@ object RetrofitClient {
         .build()
 
     val authApi: AuthApiService = retrofit.create(AuthApiService::class.java)
+    val doctorApi: DoctorApiService = retrofit.create(DoctorApiService::class.java)
 }
