@@ -8,7 +8,9 @@ import androidx.lifecycle.lifecycleScope
 import edu.cit.amihan.medibook.databinding.ActivityLoginBinding
 import edu.cit.amihan.medibook.model.LoginRequest
 import edu.cit.amihan.medibook.network.RetrofitClient
+import edu.cit.amihan.medibook.ui.doctor.DoctorListActivity
 import edu.cit.amihan.medibook.ui.register.RegisterActivity
+import edu.cit.amihan.medibook.utils.TokenManager
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
@@ -45,12 +47,23 @@ class LoginActivity : AppCompatActivity() {
 
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
+
+                    TokenManager.saveSession(
+                        token = authResponse.token,
+                        fullName = authResponse.fullName,
+                        role = authResponse.role
+                    )
+
                     Toast.makeText(
                         this@LoginActivity,
                         "Welcome back, ${authResponse.fullName}!",
                         Toast.LENGTH_SHORT
                     ).show()
-                    // TODO: save authResponse.token, navigate to dashboard
+
+                    // Doctor List is the current landing screen post-login.
+                    // Swap this for a real dashboard Activity once one exists.
+                    startActivity(Intent(this@LoginActivity, DoctorListActivity::class.java))
+                    finish()
                 } else {
                     showError("Invalid username or password.")
                 }
