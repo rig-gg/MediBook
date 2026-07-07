@@ -4,6 +4,8 @@ import AdminRegisterPage from '../pages/AdminRegisterPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import DashboardLayout from '../layouts/DashboardLayout';
 import DoctorListPage from '../pages/doctors/DoctorListPage';
+import CreateSchedulePage from '../pages/schedules/CreateSchedulePage';
+import AppointmentManagementPage from '../pages/appointments/AppointmentManagementPage';
 
 const DashboardHome = () => (
   <div className="text-slate-600 text-sm">Welcome to your MediBook dashboard.</div>
@@ -33,6 +35,16 @@ const AppRoutes = () => {
       >
         <Route path="/dashboard" element={<DashboardHome />} />
         <Route path="/doctors" element={<DoctorListPage />} />
+        <Route path="/appointments" element={<AppointmentManagementPage />} />
+
+        <Route
+          path="/schedules/new"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
+              <CreateSchedulePage />
+            </ProtectedRoute>
+          }
+        />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />
