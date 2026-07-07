@@ -31,6 +31,8 @@
                 android:exported="false" />
 
         <activity android:name=".ui.doctor.DoctorListActivity" android:exported="false" />
+        <activity android:name=".ui.schedule.DoctorScheduleListActivity" android:exported="false" />
+        <activity android:name=".ui.appointment.AppointmentHistoryActivity" android:exported="false" />
 
     </application>
 
