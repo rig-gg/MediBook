@@ -16,6 +16,16 @@ const DashboardLayout = () => {
             <Link to="/doctors" className="text-slate-600 hover:text-slate-900">
               Doctors
             </Link>
+            {(user?.role === 'ADMIN' || user?.role === 'STAFF') && (
+              <>
+                <Link to="/appointments" className="text-slate-600 hover:text-slate-900">
+                  Appointments
+                </Link>
+                <Link to="/schedules/new" className="text-slate-600 hover:text-slate-900">
+                  Add Schedule
+                </Link>
+              </>
+            )}
           </nav>
         </div>
 
