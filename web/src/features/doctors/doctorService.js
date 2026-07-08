@@ -1,4 +1,4 @@
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from '../../api/axiosInstance';
 
 // Fetch all doctors, optionally filtered by specialization
 export const getDoctors = async (specialization = '') => {
