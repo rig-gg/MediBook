@@ -1,4 +1,4 @@
-package edu.cit.amihan.medibook.ui.register
+package edu.cit.amihan.medibook.feature.auth.ui.register
 
 import android.app.DatePickerDialog
 import android.os.Bundle

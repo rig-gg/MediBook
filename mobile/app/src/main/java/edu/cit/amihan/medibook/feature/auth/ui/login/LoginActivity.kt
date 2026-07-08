@@ -1,4 +1,4 @@
-package edu.cit.amihan.medibook.feature.auth.ui.register
+package edu.cit.amihan.medibook.feature.auth.ui.login
 
 import android.content.Intent
 import android.os.Bundle
@@ -10,7 +10,7 @@ import edu.cit.amihan.medibook.core.utils.TokenManager
 import edu.cit.amihan.medibook.databinding.ActivityLoginBinding
 import edu.cit.amihan.medibook.feature.auth.model.LoginRequest
 import edu.cit.amihan.medibook.feature.doctor.ui.DoctorListActivity
-import edu.cit.amihan.medibook.ui.register.RegisterActivity
+import edu.cit.amihan.medibook.feature.auth.ui.register.RegisterActivity
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
