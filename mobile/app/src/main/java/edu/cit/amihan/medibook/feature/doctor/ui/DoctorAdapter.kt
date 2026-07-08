@@ -1,10 +1,10 @@
-package edu.cit.amihan.medibook.ui.doctor
+package edu.cit.amihan.medibook.feature.doctor.ui
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import edu.cit.amihan.medibook.databinding.ItemDoctorBinding
-import edu.cit.amihan.medibook.model.Doctor
+import edu.cit.amihan.medibook.feature.doctor.model.Doctor
 
 class DoctorAdapter(
     private var doctors: List<Doctor>,

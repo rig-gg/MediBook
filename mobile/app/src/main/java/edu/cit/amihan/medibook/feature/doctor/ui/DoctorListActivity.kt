@@ -1,4 +1,4 @@
-package edu.cit.amihan.medibook.ui.doctor
+package edu.cit.amihan.medibook.feature.doctor.ui
 
 import android.content.Intent
 import android.os.Bundle

@@ -1,4 +1,4 @@
-package edu.cit.amihan.medibook.model
+package edu.cit.amihan.medibook.feature.doctor.model
 
 data class Doctor(
     val doctorId: Long,
