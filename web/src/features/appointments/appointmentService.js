@@ -1,4 +1,4 @@
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from '../../api/axiosInstance';
 
 export const getAllAppointments = async (status = null) => {
   const params = status ? { status } : {};

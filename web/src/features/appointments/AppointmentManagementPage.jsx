@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAllAppointments, updateAppointmentStatus } from '../../services/appointmentService';
+import { getAllAppointments, updateAppointmentStatus } from './appointmentService';
 
 const statusStyles = {
   PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
