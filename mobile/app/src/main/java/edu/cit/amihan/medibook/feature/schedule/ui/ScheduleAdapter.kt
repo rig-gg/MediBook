@@ -1,10 +1,10 @@
-package edu.cit.amihan.medibook.ui.schedule
+package edu.cit.amihan.medibook.feature.schedule.ui
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import edu.cit.amihan.medibook.databinding.ItemScheduleBinding
-import edu.cit.amihan.medibook.model.DoctorSchedule
+import edu.cit.amihan.medibook.feature.schedule.model.DoctorSchedule
 
 class ScheduleAdapter(
     private var schedules: List<DoctorSchedule>,

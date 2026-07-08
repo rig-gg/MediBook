@@ -1,4 +1,4 @@
-package edu.cit.amihan.medibook.model
+package edu.cit.amihan.medibook.feature.schedule.model
 
 data class DoctorSchedule(
     val scheduleId: Long,

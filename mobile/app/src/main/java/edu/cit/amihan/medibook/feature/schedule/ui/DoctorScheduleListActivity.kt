@@ -1,4 +1,4 @@
-package edu.cit.amihan.medibook.ui.schedule
+package edu.cit.amihan.medibook.feature.schedule.ui
 
 import android.app.AlertDialog
 import android.os.Bundle
@@ -8,7 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.databinding.ActivityDoctorScheduleListBinding
-import edu.cit.amihan.medibook.model.AppointmentRequest
+import edu.cit.amihan.medibook.feature.appointment.model.AppointmentRequest
 import kotlinx.coroutines.launch
 
 class DoctorScheduleListActivity : AppCompatActivity() {

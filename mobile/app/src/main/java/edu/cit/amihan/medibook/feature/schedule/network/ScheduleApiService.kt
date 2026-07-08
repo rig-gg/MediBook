@@ -1,6 +1,6 @@
-package edu.cit.amihan.medibook.network
+package edu.cit.amihan.medibook.feature.schedule.network
 
-import edu.cit.amihan.medibook.model.DoctorSchedule
+import edu.cit.amihan.medibook.feature.schedule.model.DoctorSchedule
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Query
