@@ -3,9 +3,9 @@ import LoginPage from '../pages/LoginPage';
 import AdminRegisterPage from '../pages/AdminRegisterPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import DashboardLayout from '../layouts/DashboardLayout';
-import DoctorListPage from '../pages/doctors/DoctorListPage';
-import CreateSchedulePage from '../pages/schedules/CreateSchedulePage';
-import AppointmentManagementPage from '../pages/appointments/AppointmentManagementPage';
+import DoctorListPage from '../features/doctors/DoctorListPage';
+import CreateSchedulePage from '../features/schedules/CreateSchedulePage';
+import AppointmentManagementPage from '../features/appointments/AppointmentManagementPage';
 
 const DashboardHome = () => (
   <div className="text-slate-600 text-sm">Welcome to your MediBook dashboard.</div>
