@@ -1,4 +1,4 @@
-import axiosInstance from '../api/axiosInstance';
+import axiosInstance from '../../api/axiosInstance';
 
 export const createSchedule = async ({ doctorId, startTime, endTime }) => {
   const response = await axiosInstance.post('/schedules', { doctorId, startTime, endTime });

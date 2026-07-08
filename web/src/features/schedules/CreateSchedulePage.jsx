@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { getDoctors } from '../../services/doctorService';
-import { createSchedule } from '../../services/scheduleService';
+import { getDoctors } from '../doctors/doctorService';
+import { createSchedule } from './scheduleService';
 
 const inputClasses =
   'w-full rounded-lg border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-sm text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-panel-accent)]/40 focus:border-[var(--color-panel-accent)] transition';
