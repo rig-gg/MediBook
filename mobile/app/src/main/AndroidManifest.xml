@@ -18,7 +18,7 @@
             tools:targetApi="31">
 
         <activity
-                android:name=".ui.login.LoginActivity"
+                android:name=".feature.auth.ui.login.LoginActivity"
                 android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -27,12 +27,12 @@
         </activity>
 
         <activity
-                android:name=".ui.register.RegisterActivity"
+                android:name=".feature.auth.ui.register.RegisterActivity"
                 android:exported="false" />
 
-        <activity android:name=".ui.doctor.DoctorListActivity" android:exported="false" />
-        <activity android:name=".ui.schedule.DoctorScheduleListActivity" android:exported="false" />
-        <activity android:name=".ui.appointment.AppointmentHistoryActivity" android:exported="false" />
+        <activity android:name=".feature.doctor.ui.DoctorListActivity" android:exported="false" />
+        <activity android:name=".feature.schedule.ui.DoctorScheduleListActivity" android:exported="false" />
+        <activity android:name=".feature.appointment.ui.AppointmentHistoryActivity" android:exported="false" />
 
     </application>
 
