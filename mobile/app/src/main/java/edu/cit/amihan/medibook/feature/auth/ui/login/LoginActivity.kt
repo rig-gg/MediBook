@@ -9,7 +9,7 @@ import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.core.utils.TokenManager
 import edu.cit.amihan.medibook.databinding.ActivityLoginBinding
 import edu.cit.amihan.medibook.feature.auth.model.LoginRequest
-import edu.cit.amihan.medibook.ui.doctor.DoctorListActivity
+import edu.cit.amihan.medibook.feature.doctor.ui.DoctorListActivity
 import edu.cit.amihan.medibook.ui.register.RegisterActivity
 import kotlinx.coroutines.launch
 
