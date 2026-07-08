@@ -1,4 +1,4 @@
-package edu.cit.amihan.medibook.ui.login
+package edu.cit.amihan.medibook.feature.auth.ui.register
 
 import android.content.Intent
 import android.os.Bundle
@@ -8,7 +8,7 @@ import androidx.lifecycle.lifecycleScope
 import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.core.utils.TokenManager
 import edu.cit.amihan.medibook.databinding.ActivityLoginBinding
-import edu.cit.amihan.medibook.model.LoginRequest
+import edu.cit.amihan.medibook.feature.auth.model.LoginRequest
 import edu.cit.amihan.medibook.ui.doctor.DoctorListActivity
 import edu.cit.amihan.medibook.ui.register.RegisterActivity
 import kotlinx.coroutines.launch

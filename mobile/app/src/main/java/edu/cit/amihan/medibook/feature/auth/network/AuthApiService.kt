@@ -1,8 +1,8 @@
-package edu.cit.amihan.medibook.network
+package edu.cit.amihan.medibook.feature.auth.network
 
-import edu.cit.amihan.medibook.model.AuthResponse
-import edu.cit.amihan.medibook.model.LoginRequest
-import edu.cit.amihan.medibook.model.RegisterRequest
+import edu.cit.amihan.medibook.feature.auth.model.AuthResponse
+import edu.cit.amihan.medibook.feature.auth.model.LoginRequest
+import edu.cit.amihan.medibook.feature.auth.model.RegisterRequest
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.POST

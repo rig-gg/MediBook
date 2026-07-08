@@ -1,4 +1,4 @@
-package edu.cit.amihan.medibook.model
+package edu.cit.amihan.medibook.feature.auth.model
 
 data class AuthResponse(
     val token: String,

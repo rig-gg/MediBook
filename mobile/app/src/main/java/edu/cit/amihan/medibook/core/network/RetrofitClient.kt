@@ -1,7 +1,7 @@
 package edu.cit.amihan.medibook.core.network
 
+import edu.cit.amihan.medibook.feature.auth.network.AuthApiService
 import edu.cit.amihan.medibook.network.AppointmentApiService
-import edu.cit.amihan.medibook.network.AuthApiService
 import edu.cit.amihan.medibook.network.DoctorApiService
 import edu.cit.amihan.medibook.network.ScheduleApiService
 import okhttp3.OkHttpClient
