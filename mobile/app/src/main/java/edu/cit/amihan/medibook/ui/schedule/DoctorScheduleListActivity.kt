@@ -6,9 +6,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.databinding.ActivityDoctorScheduleListBinding
 import edu.cit.amihan.medibook.model.AppointmentRequest
-import edu.cit.amihan.medibook.network.RetrofitClient
 import kotlinx.coroutines.launch
 
 class DoctorScheduleListActivity : AppCompatActivity() {

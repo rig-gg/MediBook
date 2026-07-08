@@ -1,6 +1,6 @@
-package edu.cit.amihan.medibook.network
+package edu.cit.amihan.medibook.core.network
 
-import edu.cit.amihan.medibook.utils.TokenManager
+import edu.cit.amihan.medibook.core.utils.TokenManager
 import okhttp3.Interceptor
 import okhttp3.Response
 

@@ -5,9 +5,9 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.databinding.ActivityRegisterBinding
 import edu.cit.amihan.medibook.model.RegisterRequest
-import edu.cit.amihan.medibook.network.RetrofitClient
 import kotlinx.coroutines.launch
 import java.util.Calendar
 

@@ -1,7 +1,7 @@
 package edu.cit.amihan.medibook
 
 import android.app.Application
-import edu.cit.amihan.medibook.utils.TokenManager
+import edu.cit.amihan.medibook.core.utils.TokenManager
 
 class MedibookApplication : Application() {
 

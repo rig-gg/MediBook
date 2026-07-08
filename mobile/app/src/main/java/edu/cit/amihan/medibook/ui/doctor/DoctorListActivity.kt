@@ -5,8 +5,8 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.databinding.ActivityDoctorListBinding
-import edu.cit.amihan.medibook.network.RetrofitClient
 import edu.cit.amihan.medibook.ui.appointment.AppointmentHistoryActivity
 import edu.cit.amihan.medibook.ui.schedule.DoctorScheduleListActivity
 import kotlinx.coroutines.launch

@@ -5,12 +5,12 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import edu.cit.amihan.medibook.core.network.RetrofitClient
+import edu.cit.amihan.medibook.core.utils.TokenManager
 import edu.cit.amihan.medibook.databinding.ActivityLoginBinding
 import edu.cit.amihan.medibook.model.LoginRequest
-import edu.cit.amihan.medibook.network.RetrofitClient
 import edu.cit.amihan.medibook.ui.doctor.DoctorListActivity
 import edu.cit.amihan.medibook.ui.register.RegisterActivity
-import edu.cit.amihan.medibook.utils.TokenManager
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {

@@ -1,4 +1,4 @@
-package edu.cit.amihan.medibook.utils
+package edu.cit.amihan.medibook.core.utils
 
 import android.content.Context
 import android.content.SharedPreferences
