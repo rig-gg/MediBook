@@ -1,10 +1,10 @@
-package edu.cit.amihan.medibook.ui.appointment
+package edu.cit.amihan.medibook.feature.appointment.ui
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import edu.cit.amihan.medibook.databinding.ItemAppointmentBinding
-import edu.cit.amihan.medibook.model.AppointmentResponse
+import edu.cit.amihan.medibook.feature.appointment.model.AppointmentResponse
 
 class AppointmentAdapter(
     private var appointments: List<AppointmentResponse>

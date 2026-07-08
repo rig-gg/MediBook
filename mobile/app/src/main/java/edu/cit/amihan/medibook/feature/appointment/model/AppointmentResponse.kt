@@ -1,4 +1,4 @@
-package edu.cit.amihan.medibook.model
+package edu.cit.amihan.medibook.feature.appointment.model
 
 data class AppointmentResponse(
     val appointmentId: Long,
