@@ -1,9 +1,16 @@
 package edu.cit.amihan.medibook.record.dto;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 public class HealthRecordRequest {
 
+    @NotNull(message = "appointmentId is required")
     private Long appointmentId;
+
+    @NotBlank(message = "diagnosis is required")
     private String diagnosis;
+
     private String consultationNotes;
 
     public Long getAppointmentId() { return appointmentId; }

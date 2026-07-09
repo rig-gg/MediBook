@@ -3,6 +3,8 @@ package edu.cit.amihan.medibook.auth;
 import edu.cit.amihan.medibook.auth.dto.AuthResponse;
 import edu.cit.amihan.medibook.auth.dto.LoginRequest;
 import edu.cit.amihan.medibook.auth.dto.RegisterRequest;
+import edu.cit.amihan.medibook.clinicstaff.entity.ClinicStaff;
+import edu.cit.amihan.medibook.clinicstaff.repository.ClinicStaffRepository;
 import edu.cit.amihan.medibook.doctor.entity.Doctor;
 import edu.cit.amihan.medibook.doctor.repository.DoctorRepository;
 import edu.cit.amihan.medibook.patient.entity.Patient;
@@ -11,7 +13,9 @@ import edu.cit.amihan.medibook.security.JwtUtil;
 import edu.cit.amihan.medibook.user.entity.Role;
 import edu.cit.amihan.medibook.user.entity.User;
 import edu.cit.amihan.medibook.user.repository.UserRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -26,12 +30,13 @@ public class AuthController {
     private final UserRepository userRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final ClinicStaffRepository clinicStaffRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
     // Public login — works for ADMIN, STAFF, DOCTOR, PATIENT
     @PostMapping("/api/auth/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword())
         );
@@ -48,7 +53,7 @@ public class AuthController {
 
     // Public — open patient self-registration (BR-005), used by the Android app
     @PostMapping("/api/auth/register/patient")
-    public ResponseEntity<?> registerPatient(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> registerPatient(@Valid @RequestBody RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             return ResponseEntity.badRequest().body("Username already taken.");
         }
@@ -77,14 +82,14 @@ public class AuthController {
 
         String token = jwtUtil.generateToken(savedUser);
 
-        return ResponseEntity.ok(new AuthResponse(
+        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse(
                 token, savedUser.getUserId(), savedUser.getUsername(), savedUser.getFullName(), savedUser.getRole()
         ));
     }
 
     // Admin-only — provisions STAFF or DOCTOR accounts (BR-005)
     @PostMapping("/api/admin/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest request) {
         if (request.getRole() == Role.ADMIN) {
             return ResponseEntity.badRequest().body("Cannot create additional ADMIN accounts via this endpoint.");
         }
@@ -116,8 +121,16 @@ public class AuthController {
                     .contactNumber(request.getContactNumber())
                     .build();
             doctorRepository.save(doctor);
+        } else if (request.getRole() == Role.STAFF) {
+            ClinicStaff staff = ClinicStaff.builder()
+                    .user(savedUser)
+                    .fullName(request.getFullName())
+                    .contactNumber(request.getContactNumber())
+                    .position(request.getPosition())
+                    .build();
+            clinicStaffRepository.save(staff);
         }
 
-        return ResponseEntity.ok("Account created successfully for " + savedUser.getUsername());
+        return ResponseEntity.status(HttpStatus.CREATED).body("Account created successfully for " + savedUser.getUsername());
     }
 }
