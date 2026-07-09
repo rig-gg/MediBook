@@ -7,6 +7,7 @@ import edu.cit.amihan.medibook.appointment.service.AppointmentService;
 import edu.cit.amihan.medibook.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +26,8 @@ public class AppointmentController {
     public ResponseEntity<AppointmentResponse> bookAppointment(
             @AuthenticationPrincipal User currentUser,
             @Valid @RequestBody AppointmentRequest request) {
-        return ResponseEntity.ok(
-                appointmentService.bookAppointment(currentUser.getUserId(), request));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(appointmentService.bookAppointment(currentUser.getUserId(), request));
     }
 
     // PATIENT — view own appointment history
@@ -39,8 +40,22 @@ public class AppointmentController {
     // STAFF/DOCTOR/ADMIN — view all appointments, optionally filtered by status
     @GetMapping
     public ResponseEntity<List<AppointmentResponse>> getAllAppointments(
+            @AuthenticationPrincipal User currentUser,
             @RequestParam(required = false) AppointmentStatus status) {
+        // PATIENT should not reach here thanks to SecurityConfig,
+        // but guard defensively anyway
+        if (currentUser.getRole().name().equals("PATIENT")) {
+            return ResponseEntity.ok(appointmentService.getMyAppointments(currentUser.getUserId()));
+        }
         return ResponseEntity.ok(appointmentService.getAllAppointments(status));
+    }
+
+    // DOCTOR — view their own appointment queue, optionally filtered by status
+    @GetMapping("/doctor/{doctorId}")
+    public ResponseEntity<List<AppointmentResponse>> getDoctorAppointments(
+            @PathVariable Long doctorId,
+            @RequestParam(required = false) AppointmentStatus status) {
+        return ResponseEntity.ok(appointmentService.getDoctorAppointments(doctorId, status));
     }
 
     // STAFF — approve, cancel, or modify status (FR-004)

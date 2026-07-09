@@ -5,6 +5,7 @@ import edu.cit.amihan.medibook.schedule.dto.DoctorScheduleResponse;
 import edu.cit.amihan.medibook.schedule.service.DoctorScheduleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +22,15 @@ public class DoctorScheduleController {
     @PostMapping
     public ResponseEntity<DoctorScheduleResponse> createSchedule(
             @Valid @RequestBody DoctorScheduleRequest request) {
-        return ResponseEntity.ok(scheduleService.createSchedule(request));
+        return ResponseEntity.status(HttpStatus.CREATED).body(scheduleService.createSchedule(request));
+    }
+
+    // STAFF/ADMIN only — update an existing schedule slot
+    @PutMapping("/{scheduleId}")
+    public ResponseEntity<DoctorScheduleResponse> updateSchedule(
+            @PathVariable Long scheduleId,
+            @Valid @RequestBody DoctorScheduleRequest request) {
+        return ResponseEntity.ok(scheduleService.updateSchedule(scheduleId, request));
     }
 
     // Any authenticated user (patients browsing, staff managing) — FR-003
