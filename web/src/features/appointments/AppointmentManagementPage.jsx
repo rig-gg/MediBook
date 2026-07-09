@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getAllAppointments, updateAppointmentStatus } from './appointmentService';
 
 const statusStyles = {
@@ -14,17 +14,24 @@ const AppointmentManagementPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [actionError, setActionError] = useState('');
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => { mountedRef.current = false; };
+  }, []);
 
   const fetchAppointments = async (filter = '') => {
     setLoading(true);
     setError('');
     try {
       const data = await getAllAppointments(filter || null);
+      if (!mountedRef.current) return;
       setAppointments(data);
     } catch (err) {
+      if (!mountedRef.current) return;
       setError(err.response?.data?.message || 'Failed to load appointments.');
     } finally {
-      setLoading(false);
+      if (mountedRef.current) setLoading(false);
     }
   };
 

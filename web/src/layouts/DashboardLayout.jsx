@@ -16,6 +16,14 @@ const DashboardLayout = () => {
             <Link to="/doctors" className="text-slate-600 hover:text-slate-900">
               Doctors
             </Link>
+            <Link to="/patients" className="text-slate-600 hover:text-slate-900">
+              Patients
+            </Link>
+            {(user?.role === 'ADMIN' || user?.role === 'STAFF') && (
+              <Link to="/doctors/manage" className="text-slate-600 hover:text-slate-900">
+                Manage Doctors
+              </Link>
+            )}
             {(user?.role === 'ADMIN' || user?.role === 'STAFF') && (
               <>
                 <Link to="/appointments" className="text-slate-600 hover:text-slate-900">
@@ -23,6 +31,16 @@ const DashboardLayout = () => {
                 </Link>
                 <Link to="/schedules/new" className="text-slate-600 hover:text-slate-900">
                   Add Schedule
+                </Link>
+              </>
+            )}
+            {user?.role === 'DOCTOR' && (
+              <>
+                <Link to="/my-queue" className="text-slate-600 hover:text-slate-900">
+                  My Queue
+                </Link>
+                <Link to="/records" className="text-slate-600 hover:text-slate-900">
+                  Records
                 </Link>
               </>
             )}

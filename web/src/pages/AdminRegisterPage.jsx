@@ -17,6 +17,7 @@ const AdminRegisterPage = () => {
     role: 'STAFF',
     specialization: '',
     contactNumber: '',
+    position: '',
   });
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
@@ -43,9 +44,11 @@ const AdminRegisterPage = () => {
         role: 'STAFF',
         specialization: '',
         contactNumber: '',
+        position: '',
       });
     } catch (err) {
-      setError(err.response?.data || 'Failed to create account.');
+      const data = err.response?.data;
+      setError(typeof data === 'string' ? data : (data?.message || 'Failed to create account.'));
     } finally {
       setLoading(false);
     }
@@ -122,6 +125,36 @@ const AdminRegisterPage = () => {
             <option value="DOCTOR">Doctor</option>
           </select>
         </div>
+
+        {formData.role === 'STAFF' && (
+          <div className="rounded-lg border border-[var(--color-border)] bg-white/60 p-4 space-y-4">
+            <p className="font-mono text-[11px] uppercase tracking-wide text-[var(--color-panel-accent)]">
+              Staff Details
+            </p>
+            <div>
+              <label className={labelClasses}>Position</label>
+              <input
+                type="text"
+                name="position"
+                value={formData.position}
+                onChange={handleChange}
+                className={inputClasses}
+                placeholder="Receptionist"
+              />
+            </div>
+            <div>
+              <label className={labelClasses}>Contact Number</label>
+              <input
+                type="text"
+                name="contactNumber"
+                value={formData.contactNumber}
+                onChange={handleChange}
+                className={inputClasses}
+                placeholder="09171234567"
+              />
+            </div>
+          </div>
+        )}
 
         {formData.role === 'DOCTOR' && (
           <div className="rounded-lg border border-[var(--color-border)] bg-white/60 p-4 space-y-4">

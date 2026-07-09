@@ -11,3 +11,13 @@ export const getDoctorById = async (doctorId) => {
   const response = await axiosInstance.get(`/doctors/${doctorId}`);
   return response.data;
 };
+
+export const updateDoctor = async (doctorId, data) => {
+  const response = await axiosInstance.put(`/doctors/${doctorId}`, data);
+  return response.data;
+};
+
+export const getDoctorByUserId = async (userId) => {
+  const response = await axiosInstance.get(`/doctors/user/${userId}`);
+  return response.data;
+};
