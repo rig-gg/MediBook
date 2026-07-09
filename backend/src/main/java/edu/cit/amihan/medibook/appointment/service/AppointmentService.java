@@ -43,7 +43,6 @@ public class AppointmentService {
         }
 
         schedule.setIsAvailable(false);
-        scheduleRepository.save(schedule);
 
         Appointment appointment = Appointment.builder()
                 .patient(patient)
@@ -71,13 +70,13 @@ public class AppointmentService {
         if (newStatus == AppointmentStatus.CANCELLED) {
             DoctorSchedule schedule = appointment.getSchedule();
             schedule.setIsAvailable(true);
-            scheduleRepository.save(schedule);
         }
 
         appointment.setStatus(newStatus);
         return AppointmentResponse.fromEntity(appointmentRepository.save(appointment));
     }
 
+    @Transactional(readOnly = true)
     public List<AppointmentResponse> getMyAppointments(Long userId) {
         Patient patient = patientRepository.findByUserUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for this account."));
@@ -88,10 +87,27 @@ public class AppointmentService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
     public List<AppointmentResponse> getAllAppointments(AppointmentStatus statusFilter) {
         List<Appointment> appointments = (statusFilter != null)
                 ? appointmentRepository.findByStatusOrderByCreatedAtAsc(statusFilter)
                 : appointmentRepository.findAllByOrderByCreatedAtDesc();
+
+        return appointments.stream()
+                .map(AppointmentResponse::fromEntity)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<AppointmentResponse> getDoctorAppointments(Long doctorId, AppointmentStatus statusFilter) {
+        List<Appointment> appointments = appointmentRepository
+                .findByScheduleDoctorDoctorIdOrderByCreatedAtDesc(doctorId);
+
+        if (statusFilter != null) {
+            appointments = appointments.stream()
+                    .filter(a -> a.getStatus() == statusFilter)
+                    .toList();
+        }
 
         return appointments.stream()
                 .map(AppointmentResponse::fromEntity)

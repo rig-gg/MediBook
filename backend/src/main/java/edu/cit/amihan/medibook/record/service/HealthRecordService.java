@@ -1,5 +1,6 @@
 package edu.cit.amihan.medibook.record.service;
 
+import edu.cit.amihan.medibook.common.exception.ResourceNotFoundException;
 import edu.cit.amihan.medibook.record.entity.HealthRecord;
 import edu.cit.amihan.medibook.record.repository.HealthRecordRepository;
 import edu.cit.amihan.medibook.record.dto.HealthRecordRequest;
@@ -65,5 +66,22 @@ public class HealthRecordService {
                 .stream()
                 .map(HealthRecordResponse::fromEntity)
                 .toList();
+    }
+
+    // Doctors can update diagnosis and consultation notes on an existing record
+    @Transactional
+    public HealthRecordResponse updateRecord(Long recordId, HealthRecordRequest req) {
+        HealthRecord rec = recordRepo.findById(recordId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Health record not found with id: " + recordId));
+
+        if (req.getDiagnosis() != null) {
+            rec.setDiagnosis(req.getDiagnosis());
+        }
+        if (req.getConsultationNotes() != null) {
+            rec.setConsultationNotes(req.getConsultationNotes());
+        }
+
+        return HealthRecordResponse.fromEntity(recordRepo.save(rec));
     }
 }

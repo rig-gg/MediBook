@@ -9,6 +9,7 @@ import edu.cit.amihan.medibook.schedule.entity.DoctorSchedule;
 import edu.cit.amihan.medibook.schedule.repository.DoctorScheduleRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,6 +20,7 @@ public class DoctorScheduleService {
     private final DoctorScheduleRepository scheduleRepository;
     private final DoctorRepository doctorRepository;
 
+    @Transactional
     public DoctorScheduleResponse createSchedule(DoctorScheduleRequest request) {
         if (!request.getEndTime().isAfter(request.getStartTime())) {
             throw new IllegalArgumentException("endTime must be after startTime");
@@ -29,18 +31,7 @@ public class DoctorScheduleService {
                         "Doctor not found with id: " + request.getDoctorId()));
 
         // BR-003: reject overlapping slots for the same doctor
-        boolean hasOverlap = scheduleRepository
-                .findByDoctorDoctorIdAndIsAvailableTrueOrderByStartTimeAsc(doctor.getDoctorId())
-                .stream()
-                .anyMatch(existing ->
-                        request.getStartTime().isBefore(existing.getEndTime()) &&
-                                request.getEndTime().isAfter(existing.getStartTime())
-                );
-
-        if (hasOverlap) {
-            throw new IllegalArgumentException(
-                    "This time slot overlaps with an existing schedule for this doctor.");
-        }
+        checkForOverlap(request.getStartTime(), request.getEndTime(), doctor.getDoctorId(), null);
 
         DoctorSchedule schedule = DoctorSchedule.builder()
                 .doctor(doctor)
@@ -52,6 +43,7 @@ public class DoctorScheduleService {
         return DoctorScheduleResponse.fromEntity(scheduleRepository.save(schedule));
     }
 
+    @Transactional(readOnly = true)
     public List<DoctorScheduleResponse> getAvailableSchedules(Long doctorId) {
         List<DoctorSchedule> schedules = (doctorId != null)
                 ? scheduleRepository.findByDoctorDoctorIdAndIsAvailableTrueOrderByStartTimeAsc(doctorId)
@@ -60,5 +52,40 @@ public class DoctorScheduleService {
         return schedules.stream()
                 .map(DoctorScheduleResponse::fromEntity)
                 .toList();
+    }
+
+    @Transactional
+    public DoctorScheduleResponse updateSchedule(Long scheduleId, DoctorScheduleRequest request) {
+        DoctorSchedule schedule = scheduleRepository.findById(scheduleId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Schedule not found with id: " + scheduleId));
+
+        if (!request.getEndTime().isAfter(request.getStartTime())) {
+            throw new IllegalArgumentException("endTime must be after startTime");
+        }
+
+        // Check overlap excluding this schedule
+        checkForOverlap(request.getStartTime(), request.getEndTime(),
+                schedule.getDoctor().getDoctorId(), scheduleId);
+
+        schedule.setStartTime(request.getStartTime());
+        schedule.setEndTime(request.getEndTime());
+
+        return DoctorScheduleResponse.fromEntity(scheduleRepository.save(schedule));
+    }
+
+    private void checkForOverlap(
+            java.time.LocalDateTime startTime,
+            java.time.LocalDateTime endTime,
+            Long doctorId,
+            Long excludeScheduleId) {
+
+        boolean hasOverlap = scheduleRepository.existsOverlapping(
+                doctorId, startTime, endTime, excludeScheduleId);
+
+        if (hasOverlap) {
+            throw new IllegalArgumentException(
+                    "This time slot overlaps with an existing schedule for this doctor.");
+        }
     }
 }
