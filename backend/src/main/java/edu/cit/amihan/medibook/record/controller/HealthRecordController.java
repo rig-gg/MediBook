@@ -33,4 +33,12 @@ public class HealthRecordController {
     public List<HealthRecordResponse> byPatient(@PathVariable Long patientId) {
         return service.getByPatient(patientId);
     }
+
+    // Doctors can update diagnosis and consultation notes
+    @PutMapping("/{recordId}")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public HealthRecordResponse update(@PathVariable Long recordId,
+            @RequestBody HealthRecordRequest req) {
+        return service.updateRecord(recordId, req);
+    }
 }
