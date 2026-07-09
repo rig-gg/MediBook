@@ -97,7 +97,7 @@ const AppointmentManagementPage = () => {
               <div>
                 <p className="font-medium text-[var(--color-ink)]">{appt.patientName}</p>
                 <p className="text-sm text-[var(--color-ink-soft)]">
-                  with Dr. {appt.doctorName} — {new Date(appt.startTime).toLocaleString()}
+                  with {appt.doctorName} — {new Date(appt.startTime).toLocaleString()}
                 </p>
               </div>
 

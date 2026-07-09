@@ -22,7 +22,7 @@ class AppointmentAdapter(
 
     override fun onBindViewHolder(holder: AppointmentViewHolder, position: Int) {
         val appointment = appointments[position]
-        holder.binding.tvDoctorName.text = "Dr. ${appointment.doctorName}"
+        holder.binding.tvDoctorName.text = appointment.doctorName
         holder.binding.tvSlotTime.text = "${appointment.startTime}  →  ${appointment.endTime}"
         holder.binding.tvStatus.text = appointment.status
     }
