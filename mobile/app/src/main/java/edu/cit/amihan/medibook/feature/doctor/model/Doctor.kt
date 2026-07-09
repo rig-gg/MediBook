@@ -1,9 +1,11 @@
 package edu.cit.amihan.medibook.feature.doctor.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Doctor(
-    val doctorId: Long,
-    val fullName: String,
-    val specialization: String?,
-    val contactNumber: String?,
-    val email: String
+    @SerializedName("doctorId") val doctorId: Long,
+    @SerializedName("fullName") val fullName: String,
+    @SerializedName("specialization") val specialization: String?,
+    @SerializedName("contactNumber") val contactNumber: String?,
+    @SerializedName("email") val email: String
 )

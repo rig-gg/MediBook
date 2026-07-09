@@ -1,6 +1,8 @@
 package edu.cit.amihan.medibook.feature.auth.model
 
+import com.google.gson.annotations.SerializedName
+
 data class LoginRequest(
-    val username: String,
-    val password: String
+    @SerializedName("username") val username: String,
+    @SerializedName("password") val password: String
 )

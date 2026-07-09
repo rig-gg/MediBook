@@ -1,5 +1,7 @@
 package edu.cit.amihan.medibook.feature.appointment.model
 
+import com.google.gson.annotations.SerializedName
+
 data class AppointmentRequest(
-    val scheduleId: Long
+    @SerializedName("scheduleId") val scheduleId: Long
 )
