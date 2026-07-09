@@ -11,6 +11,7 @@ import edu.cit.amihan.medibook.databinding.ActivityLoginBinding
 import edu.cit.amihan.medibook.feature.auth.model.LoginRequest
 import edu.cit.amihan.medibook.feature.doctor.ui.DoctorListActivity
 import edu.cit.amihan.medibook.feature.auth.ui.register.RegisterActivity
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class LoginActivity : AppCompatActivity() {
@@ -19,6 +20,14 @@ class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Auto-login if a valid token exists
+        if (TokenManager.isLoggedIn()) {
+            startActivity(Intent(this, DoctorListActivity::class.java))
+            finish()
+            return
+        }
+
         binding = ActivityLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -50,6 +59,7 @@ class LoginActivity : AppCompatActivity() {
 
                     TokenManager.saveSession(
                         token = authResponse.token,
+                        userId = authResponse.userId,
                         fullName = authResponse.fullName,
                         role = authResponse.role
                     )
@@ -60,13 +70,13 @@ class LoginActivity : AppCompatActivity() {
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    // Doctor List is the current landing screen post-login.
-                    // Swap this for a real dashboard Activity once one exists.
                     startActivity(Intent(this@LoginActivity, DoctorListActivity::class.java))
                     finish()
                 } else {
                     showError("Invalid username or password.")
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 setLoading(false)
                 showError("Network error: ${e.message}")

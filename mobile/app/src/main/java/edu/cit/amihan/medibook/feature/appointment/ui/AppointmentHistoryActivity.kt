@@ -6,7 +6,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.databinding.ActivityAppointmentHistoryBinding
-import edu.cit.amihan.medibook.feature.appointment.ui.AppointmentAdapter
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class AppointmentHistoryActivity : AppCompatActivity() {
@@ -28,7 +28,6 @@ class AppointmentHistoryActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Refresh in case the user just booked a new appointment and came back
         fetchAppointments()
     }
 
@@ -51,6 +50,8 @@ class AppointmentHistoryActivity : AppCompatActivity() {
                 } else {
                     showError("Failed to load appointments (code ${response.code()}).")
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 setLoading(false)
                 showError("Network error: ${e.message}")

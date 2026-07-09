@@ -2,13 +2,17 @@ package edu.cit.amihan.medibook.feature.doctor.ui
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import edu.cit.amihan.medibook.core.network.RetrofitClient
+import edu.cit.amihan.medibook.core.utils.TokenManager
 import edu.cit.amihan.medibook.databinding.ActivityDoctorListBinding
 import edu.cit.amihan.medibook.feature.appointment.ui.AppointmentHistoryActivity
+import edu.cit.amihan.medibook.feature.auth.ui.login.LoginActivity
 import edu.cit.amihan.medibook.feature.schedule.ui.DoctorScheduleListActivity
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class DoctorListActivity : AppCompatActivity() {
@@ -39,6 +43,19 @@ class DoctorListActivity : AppCompatActivity() {
             startActivity(Intent(this, AppointmentHistoryActivity::class.java))
         }
 
+        binding.btnLogout.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Are you sure you want to logout?")
+                .setPositiveButton("Logout") { _, _ ->
+                    TokenManager.clear()
+                    startActivity(Intent(this, LoginActivity::class.java))
+                    finish()
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+        }
+
         fetchDoctors()
     }
 
@@ -63,6 +80,8 @@ class DoctorListActivity : AppCompatActivity() {
                 } else {
                     showError("Failed to load doctors (code ${response.code()}).")
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 setLoading(false)
                 showError("Network error: ${e.message}")

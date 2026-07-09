@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.databinding.ActivityDoctorScheduleListBinding
 import edu.cit.amihan.medibook.feature.appointment.model.AppointmentRequest
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
 class DoctorScheduleListActivity : AppCompatActivity() {
@@ -26,6 +27,11 @@ class DoctorScheduleListActivity : AppCompatActivity() {
 
         doctorId = intent.getLongExtra("doctorId", -1L)
         doctorName = intent.getStringExtra("doctorName") ?: "Doctor"
+
+        if (doctorId == -1L) {
+            showError("Invalid doctor ID.")
+            return
+        }
 
         binding.tvDoctorHeader.text = "Available slots with Dr. $doctorName"
 
@@ -55,6 +61,8 @@ class DoctorScheduleListActivity : AppCompatActivity() {
                 } else {
                     showError("Failed to load schedules (code ${response.code()}).")
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 setLoading(false)
                 showError("Network error: ${e.message}")
@@ -87,13 +95,15 @@ class DoctorScheduleListActivity : AppCompatActivity() {
                         "Appointment requested! Status: PENDING",
                         Toast.LENGTH_LONG
                     ).show()
-                    fetchSchedules() // refresh so the now-booked slot disappears
+                    fetchSchedules()
                 } else if (response.code() == 409 || response.code() == 400) {
                     showError("This slot was just booked by someone else. Please pick another.")
                     fetchSchedules()
                 } else {
                     showError("Booking failed (code ${response.code()}).")
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 setLoading(false)
                 showError("Network error: ${e.message}")
