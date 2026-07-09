@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,17 @@ public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, 
     List<DoctorSchedule> findByDoctorDoctorIdAndIsAvailableTrueOrderByStartTimeAsc(Long doctorId);
 
     List<DoctorSchedule> findByIsAvailableTrueOrderByStartTimeAsc();
+
+    // Database-level overlap check — prevents loading all rows into memory
+    @Query("SELECT COUNT(s) > 0 FROM DoctorSchedule s " +
+           "WHERE s.doctor.doctorId = :doctorId " +
+           "AND (:excludeId IS NULL OR s.scheduleId <> :excludeId) " +
+           "AND s.startTime < :endTime AND s.endTime > :startTime")
+    boolean existsOverlapping(
+            @Param("doctorId") Long doctorId,
+            @Param("startTime") LocalDateTime startTime,
+            @Param("endTime") LocalDateTime endTime,
+            @Param("excludeId") Long excludeScheduleId);
 
     // Pessimistic write lock: prevents two concurrent requests from both
     // reading isAvailable = true for the same slot before either commits.
