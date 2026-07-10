@@ -5,160 +5,183 @@
 
 ## Overview
 
-MediBook is an integrated client-server healthcare ecosystem built to replace the manual appointment tracking and disconnected record-keeping still common in small healthcare facilities and local barangay clinics. It connects patients, clinic staff, doctors, and system administrators through a single platform, backed by a centralized REST API and cloud database.
+MediBook is an integrated client-server healthcare ecosystem built to replace manual appointment tracking and disconnected record-keeping in small clinics and barangay health centers. It connects patients, clinic staff, doctors, and administrators through a single platform backed by a centralized REST API and Supabase PostgreSQL database.
 
 The system is made up of three parts:
 
-- **Backend API** — Spring Boot REST API handling authentication, appointments, records, and third-party integrations
-- **Web Application** — ReactJS dashboard for clinic staff, doctors, and administrators
-- **Mobile Application** — Android Kotlin app for patient self-service
+- **Backend API** — Spring Boot REST API handling auth, appointments, schedules, records, and staff/doctor/patient management
+- **Web Application** — React + Vite dashboard for clinic staff, doctors, and administrators (teal/red design system)
+- **Mobile Application** — Android Kotlin app for patient self-service (registration, browsing doctors, booking appointments)
 
-This repository is the **monorepo root**, containing all three parts of the system in their own subdirectories:
+## Repository Structure
 
 ```
 medibook/
- ├── backend/     # Spring Boot REST API
- ├── web/         # ReactJS web dashboard
- └── mobile/      # Android Kotlin app (patient-facing)
+ ├── backend/     # Spring Boot REST API (Maven, Java 17)
+ ├── web/         # React + Vite dashboard (Tailwind CSS v4)
+ ├── mobile/      # Android Kotlin app (Retrofit, min SDK 26)
+ └── docs/        # SRS, diagrams, sprint traces, commit history
 ```
-
-The mobile app inside `mobile/` is what patients use to register, log in, view doctor availability, and book appointments.
-
-## Problem It Solves
-
-Small clinics often rely on manual logs or disconnected local software, which leads to scheduling conflicts, lost records, and no easy way for patients to book appointments without calling or visiting in person. MediBook centralizes this into one system so patients can book from their phones, staff can manage schedules from a dashboard, and doctors can keep consultation records tied directly to each appointment.
 
 ## Tech Stack
 
 | Layer | Technology |
 |---|---|
-| Mobile App | Android (Kotlin) |
-| Web App | ReactJS |
-| Backend API | Spring Boot (Java) |
-| Database | Supabase (PostgreSQL) |
-| Authentication | JWT (JSON Web Tokens) + BCrypt password hashing |
-| Networking (Mobile) | Retrofit |
-| External Integrations | OpenFDA API (medical classification lookup), Supabase/Mailtrap SMTP (email notifications) |
-| Deployment | Render (API), Netlify (Web), Supabase (DB) |
+| Backend API | Spring Boot 4.1.0, Spring Security, Spring Data JPA |
+| Database | Supabase PostgreSQL |
+| Authentication | JWT (jjwt 0.12.5) + BCrypt password hashing |
+| Web App | React 18, Vite 5, Tailwind CSS v4, React Router 7, Axios |
+| Mobile App | Android (Kotlin), Retrofit 2.11, OkHttp 4.12, Coroutines |
+| Documentation | UML diagrams (class, activity, sequence, use case, ERD) |
 
 ## User Roles
 
-- **Patient** — registers and logs in through the mobile app, books appointments, views status
-- **Clinic Staff** — manages incoming appointment requests, configures doctor schedules (web)
-- **Doctor** — views daily queue, writes consultation records after completed appointments (web)
-- **System Administrator** — provisions internal Staff/Doctor accounts (web); public registration is patient-only
+| Role | Access | Capabilities |
+|---|---|---|
+| **PATIENT** | Mobile app | Self-register, login, browse doctors, view available slots, book/cancel appointments, view history |
+| **STAFF** | Web dashboard | Manage appointments (approve/cancel/complete), create doctor schedules, view patients and doctors |
+| **DOCTOR** | Web dashboard | View personal appointment queue, write health records with diagnosis and notes, browse patients |
+| **ADMIN** | Web dashboard | Provision STAFF/DOCTOR accounts, manage staff profiles, full STAFF capabilities |
 
-## Mobile App Features
+## API Endpoints
 
-- **User Registration** — patient sign-up connected to the Spring Boot API, which persists the account to the Supabase database
-- **User Login** — validates credentials against the backend, receives a JWT on success, and redirects to the patient dashboard
-- **Role Restriction** — mobile registration only ever creates `PATIENT` accounts; staff and doctor accounts are provisioned separately by an admin through the web app
+### Auth
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| POST | `/api/auth/login` | Public | Authenticate any user, returns JWT |
+| POST | `/api/auth/register/patient` | Public | Patient self-registration (mobile) |
+| POST | `/api/admin/register` | ADMIN | Provision STAFF or DOCTOR accounts |
 
-## Mobile App Structure
+### Appointments
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| POST | `/api/appointments` | PATIENT | Book appointment |
+| GET | `/api/appointments/me` | PATIENT | View own appointments |
+| GET | `/api/appointments` | STAFF/DOCTOR/ADMIN | List all (filter by status) |
+| GET | `/api/appointments/doctor/{id}` | Authenticated | Doctor queue |
+| PATCH | `/api/appointments/{id}/status` | STAFF/ADMIN | Approve/cancel/complete |
 
-```
-mobile/
- └── app/src/main/java/com/medibook/app/
-      ├── ui/            # Activities/Fragments (Registration, Login, Dashboard, etc.)
-      ├── network/        # Retrofit API service + client setup
-      ├── model/           # Data classes (User, Patient, Appointment, etc.)
-      └── util/            # Token storage, validation helpers
-```
+### Schedules
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| POST | `/api/schedules` | STAFF/ADMIN | Create availability slot |
+| PUT | `/api/schedules/{id}` | STAFF/ADMIN | Update slot |
+| GET | `/api/schedules` | Authenticated | List available slots |
 
-## Backend Connection
+### Doctors
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/doctors` | Authenticated | List doctors (filter by specialization) |
+| GET | `/api/doctors/{id}` | Authenticated | Doctor detail |
+| GET | `/api/doctors/user/{id}` | Authenticated | Doctor by user ID |
+| PUT | `/api/doctors/{id}` | ADMIN/STAFF | Update doctor |
 
-The mobile app communicates with the Spring Boot REST API over HTTPS:
+### Patients
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/patients` | ADMIN/STAFF/DOCTOR | List/search patients |
+| GET | `/api/patients/{id}` | ADMIN/STAFF/DOCTOR | Patient detail |
 
-- `POST /api/auth/register` — registers a new patient account
-- `POST /api/auth/login` — authenticates a user and returns a JWT
-- Additional endpoints for appointments and schedules are consumed once authentication is complete
+### Staff
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| GET | `/api/staff` | ADMIN/STAFF/DOCTOR | List/search staff |
+| GET | `/api/staff/{id}` | ADMIN/STAFF/DOCTOR | Staff detail |
+| GET | `/api/staff/user/{id}` | ADMIN/STAFF/DOCTOR | Staff by user ID |
+| PUT | `/api/staff/{id}` | ADMIN | Update staff |
 
-The API itself connects to a Supabase PostgreSQL instance for persistence, with passwords hashed using BCrypt before being stored.
+### Health Records
+| Method | Endpoint | Access | Purpose |
+|---|---|---|---|
+| POST | `/api/records/create` | DOCTOR | Create health record (completes appointment) |
+| GET | `/api/records/patient/{id}` | DOCTOR/STAFF | View patient records |
+| PUT | `/api/records/{id}` | DOCTOR | Update diagnosis/notes |
+
+## Web App Pages
+
+| Route | Page | Roles |
+|---|---|---|
+| `/login` | LoginPage | Public |
+| `/admin/register` | AdminRegisterPage | ADMIN |
+| `/dashboard` | DashboardHome | All authenticated |
+| `/doctors` | DoctorListPage | All authenticated |
+| `/patients` | ManagePatientsPage | ADMIN/STAFF/DOCTOR |
+| `/doctors/manage` | ManageDoctorsPage | ADMIN/STAFF |
+| `/staff` | ManageStaffPage | ADMIN |
+| `/appointments` | AppointmentManagementPage | ADMIN/STAFF |
+| `/schedules/new` | CreateSchedulePage | ADMIN/STAFF |
+| `/my-queue` | DoctorAppointmentQueuePage | DOCTOR |
+| `/records` | DoctorRecordsPage | DOCTOR |
+
+## Mobile App Activities
+
+| Activity | Purpose |
+|---|---|
+| LoginActivity | Login with auto-login if session exists |
+| RegisterActivity | Patient registration with confirm-password validation |
+| DoctorListActivity | Browse doctors, search by specialization |
+| DoctorScheduleListActivity | View available slots, confirm booking |
+| AppointmentHistoryActivity | View own appointment history |
 
 ## Setup Instructions
 
-MediBook is made up of three parts that need to run together: the **backend API**, the **web app**, and the **mobile app**. Set them up in that order, since both frontends depend on the backend being up and connected to the database.
+### Prerequisites
+- Java 17+
+- Node.js 18+
+- Android Studio (latest stable)
+- A Supabase PostgreSQL project
 
-### 1. Database (Supabase)
+### 1. Backend
 
-1. Create a free project at [supabase.com](https://supabase.com)
-2. Once created, go to **Project Settings → Database** and copy the connection string (host, port, database name, user, password)
-3. Run/import the schema so the `users`, `patients`, `doctors`, `doctor_schedules`, `appointments`, and `health_records` tables exist (see the ERD in the SRS)
-4. Keep the Supabase project URL and API keys handy — you'll need them for the backend and for SMTP if using Supabase Auth's mail service
+```bash
+cd backend
+# Set environment variables or edit src/main/resources/application.properties
+#   DB_URL, DB_USERNAME, DB_PASSWORD, JWT_SECRET
+./mvnw clean install
+./mvnw spring-boot:run
+```
 
-### 2. Backend API (Spring Boot)
+The API runs on `http://localhost:8080` by default.
 
-**Requirements:** Java 17+, Maven (or the Maven wrapper), an IDE such as IntelliJ IDEA or VS Code
+### 2. Web App
 
-1. Clone this repository, then move into the backend folder:
-   ```bash
-   git clone <this-repo-url>
-   cd medibook/backend
-   ```
-2. Open `src/main/resources/application.properties` (or `application.yml`) and set:
-   ```properties
-   spring.datasource.url=jdbc:postgresql://<your-supabase-host>:5432/postgres
-   spring.datasource.username=<your-db-user>
-   spring.datasource.password=<your-db-password>
-   jwt.secret=<your-jwt-secret-key>
-   openfda.api.base-url=https://api.fda.gov
-   spring.mail.host=<smtp-host>
-   spring.mail.username=<smtp-username>
-   spring.mail.password=<smtp-password>
-   ```
-3. Build and run:
-   ```bash
-   ./mvnw clean install
-   ./mvnw spring-boot:run
-   ```
-4. By default the API runs on `http://localhost:8080`. Confirm it's up by hitting a health/test endpoint (e.g. `GET /api/auth/ping` or similar)
-5. When ready to deploy, push to **Render** (or your chosen host) and set the same environment variables there. Note the deployed base URL — it'll be needed by both the web and mobile apps
+```bash
+cd web
+npm install
+# Create .env with:
+#   VITE_API_URL=http://localhost:8080/api
+npm run dev
+```
 
-### 3. Web Application (ReactJS)
+The app runs on `http://localhost:5173`.
 
-**Requirements:** Node.js 18+, npm or yarn
+### 3. Mobile App
 
-1. From the cloned repo, move into the web folder:
-   ```bash
-   cd medibook/web
-   ```
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env` file in the project root and point it at the backend API:
-   ```env
-   REACT_APP_API_BASE_URL=http://localhost:8080/api
-   ```
-   (swap in the deployed Render URL once the backend is live)
-4. Run locally:
-   ```bash
-   npm start
-   ```
-5. The app should be available at `http://localhost:3000`. Log in using an ADMIN account (provisioned directly in the database, since admin accounts aren't self-registrable) to manage staff/doctor accounts and test the dashboard
-6. To deploy, connect the repo to **Netlify** and set `REACT_APP_API_BASE_URL` as an environment variable in the Netlify site settings
+Open `mobile/` in Android Studio. The Retrofit base URL defaults to `http://10.0.2.2:8080/` (emulator localhost). Build and run on an emulator or device with Android 8.0+.
 
-### 4. Mobile Application (Android Kotlin)
+## Current Status
 
-**Requirements:** Android Studio (latest stable), Android SDK 26+ (Android 8.0+), a physical device or emulator
+All core features are implemented and integrated:
 
-1. From the cloned repo, open the `mobile/` folder directly in **Android Studio** (File → Open → select `medibook/mobile`) and let Gradle sync
-2. Locate the network/API config file (e.g. `network/ApiClient.kt` or `util/Constants.kt`) and set the base URL to your backend:
-   ```kotlin
-   const val BASE_URL = "http://10.0.2.2:8080/api/"   // 10.0.2.2 = localhost when using the Android emulator
-   // const val BASE_URL = "https://your-app.onrender.com/api/"   // deployed backend
-   ```
-3. If testing against a locally running backend on a physical device, use your machine's local network IP instead of `10.0.2.2`, and make sure the device is on the same network
-4. Build and run the app on an emulator or device running Android 8.0+
-5. Test the flow end-to-end: register a new patient → confirm the record appears in the Supabase `patients`/`users` table → log in → confirm you land on the patient dashboard with a JWT stored for the session
+- **Backend:** Full REST API with 20+ endpoints, JWT auth, role-based access control, bean validation, DB-level queries with `@EntityGraph`, pessimistic locking for double-booking prevention
+- **Web:** Complete dashboard with 11 routes, consistent teal/red design system, role-based navigation, error boundary, mounted-ref guard against StrictMode race conditions
+- **Mobile:** 5 activities with full auth flow (auto-login, logout, confirm password), Retrofit + OkHttp with timeouts and header-level logging
+- **Documentation:** SRS PDFs, UML diagrams (class, activity, sequence, use case, ERD), sprint traces, commit history summaries
 
-### Running Everything Together (Local Development)
+### Not Yet Implemented
+- OpenFDA API integration for medical classification
+- SMTP email notifications via Mailtrap
 
-1. Start the backend first (`./mvnw spring-boot:run`) and confirm it's reachable
-2. Start the web app (`npm start`) pointing at the local backend
-3. Run the mobile app pointing at the local backend via `10.0.2.2` (emulator) or your LAN IP (physical device)
-4. Register a patient from the mobile app, then verify the account shows up if you check the database directly or via the web admin panel
+## Diagrams & Docs
 
-## Status
-
-Currently in active development as part of the Systems Integration and Architecture 1 course project. This phase covers Android project setup and the patient Registration/Login flow, connected end-to-end to the Supabase-backed API.
+All documentation is in the `docs/` directory:
+- `AMIHAN_MEDIBOOK_FINAL_SRS.pdf` — Final Software Requirements Specification
+- `IT342_SRS_V1.0_Amihan_Gyle.pdf` — IT342 SRS version 1.0
+- `Amihan_Gyle_MobileDevelopmentSetup.pdf` — Mobile dev environment setup
+- `Amihan_Gyle_Phase2.pdf` — Phase 2 implementation
+- `*.png` — Activity, Class, ERD, and Sequence diagrams
+- `*.drawio` — Use case diagram source
+- `commits-summary.md` — Full commit history with hashes
+- `fixes-summary.md` — Audit fixes log
+- `sprint-trace.md` — Architecture, endpoints, fix audit, current state
+- `project-structure.md` — Complete directory tree of all 3 subprojects
