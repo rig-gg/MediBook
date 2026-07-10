@@ -61,9 +61,27 @@ public class AppointmentService {
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Appointment not found with id: " + appointmentId));
 
+        AppointmentStatus current = appointment.getStatus();
+
         // BR-004: completed + recorded appointments are immutable
-        if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+        if (current == AppointmentStatus.COMPLETED) {
             throw new IllegalStateException("Completed appointments cannot be modified.");
+        }
+
+        // State machine: enforce valid transitions
+        // PENDING  -> CONFIRMED | CANCELLED
+        // CONFIRMED -> COMPLETED | CANCELLED
+        // CANCELLED -> (no forward transitions, must stay cancelled)
+        boolean valid = switch (current) {
+            case PENDING   -> newStatus == AppointmentStatus.CONFIRMED || newStatus == AppointmentStatus.CANCELLED;
+            case CONFIRMED -> newStatus == AppointmentStatus.COMPLETED || newStatus == AppointmentStatus.CANCELLED;
+            case CANCELLED -> false;
+            default        -> false;
+        };
+
+        if (!valid) {
+            throw new IllegalStateException(
+                    "Cannot transition appointment from " + current + " to " + newStatus + ".");
         }
 
         // If cancelling, free the slot back up for rebooking
