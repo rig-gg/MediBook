@@ -1,6 +1,7 @@
 package edu.cit.amihan.medibook.feature.schedule.ui
 
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -9,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.databinding.ActivityDoctorScheduleListBinding
 import edu.cit.amihan.medibook.feature.appointment.model.AppointmentRequest
+import edu.cit.amihan.medibook.feature.auth.ui.dashboard.DashboardActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -33,7 +35,14 @@ class DoctorScheduleListActivity : AppCompatActivity() {
             return
         }
 
-        binding.tvDoctorHeader.text = "Available slots with Dr. $doctorName"
+        binding.tvDoctorHeader.text = "Available slots with $doctorName"
+
+        binding.tvHome.setOnClickListener {
+            startActivity(Intent(this, DashboardActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            })
+            finish()
+        }
 
         adapter = ScheduleAdapter(emptyList()) { schedule ->
             confirmBooking(schedule.scheduleId, schedule.startTime)
@@ -70,7 +79,7 @@ class DoctorScheduleListActivity : AppCompatActivity() {
         }
     }
 
-    private fun confirmBooking(scheduleId: Long, startTime: String) {
+    private fun confirmBooking(scheduleId: Long, startTime: String?) {
         AlertDialog.Builder(this)
             .setTitle("Confirm Booking")
             .setMessage("Book appointment with Dr. $doctorName at $startTime?")

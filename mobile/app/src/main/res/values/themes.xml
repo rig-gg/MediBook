@@ -1,11 +1,16 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Theme.MediBook" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">@color/medibook_primary</item>
         <item name="colorPrimaryDark">@color/medibook_primary_dark</item>
         <item name="colorOnPrimary">@color/medibook_surface</item>
         <item name="colorSecondary">@color/medibook_accent</item>
         <item name="colorOnSecondary">@color/medibook_surface</item>
+        <item name="colorSurface">@color/medibook_surface</item>
+        <item name="colorOnSurface">@color/medibook_ink</item>
+        <item name="colorOnSurfaceVariant">@color/medibook_ink_soft</item>
+        <item name="colorOutline">@color/medibook_border</item>
         <item name="android:windowBackground">@color/medibook_background</item>
+        <item name="android:statusBarColor">@color/medibook_primary_dark</item>
+        <item name="android:navigationBarColor">@color/medibook_background</item>
     </style>
 </resources>

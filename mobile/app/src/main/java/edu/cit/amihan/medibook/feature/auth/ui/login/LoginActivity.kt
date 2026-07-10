@@ -9,7 +9,7 @@ import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.core.utils.TokenManager
 import edu.cit.amihan.medibook.databinding.ActivityLoginBinding
 import edu.cit.amihan.medibook.feature.auth.model.LoginRequest
-import edu.cit.amihan.medibook.feature.doctor.ui.DoctorListActivity
+import edu.cit.amihan.medibook.feature.auth.ui.dashboard.DashboardActivity
 import edu.cit.amihan.medibook.feature.auth.ui.register.RegisterActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -21,11 +21,13 @@ class LoginActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Auto-login if a valid token exists
-        if (TokenManager.isLoggedIn()) {
-            startActivity(Intent(this, DoctorListActivity::class.java))
+        // Auto-login if a valid PATIENT token exists
+        if (TokenManager.isLoggedIn() && TokenManager.getRole() == "PATIENT") {
+            startActivity(Intent(this, DashboardActivity::class.java))
             finish()
             return
+        } else if (TokenManager.isLoggedIn()) {
+            TokenManager.clear()
         }
 
         binding = ActivityLoginBinding.inflate(layoutInflater)
@@ -57,23 +59,29 @@ class LoginActivity : AppCompatActivity() {
                 if (response.isSuccessful && response.body() != null) {
                     val authResponse = response.body()!!
 
+                    if (authResponse.role != "PATIENT") {
+                        showError("Mobile access is for PATIENT accounts only. Use the web portal.")
+                        return@launch
+                    }
+
                     TokenManager.saveSession(
-                        token = authResponse.token,
+                        token = authResponse.token ?: "",
                         userId = authResponse.userId,
-                        fullName = authResponse.fullName,
-                        role = authResponse.role
+                        fullName = authResponse.fullName ?: "Patient",
+                        role = authResponse.role ?: ""
                     )
 
                     Toast.makeText(
                         this@LoginActivity,
-                        "Welcome back, ${authResponse.fullName}!",
+                        "Welcome back, ${authResponse.fullName ?: "Patient"}!",
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    startActivity(Intent(this@LoginActivity, DoctorListActivity::class.java))
+                    startActivity(Intent(this@LoginActivity, DashboardActivity::class.java))
                     finish()
                 } else {
-                    showError("Invalid username or password.")
+                    val errorBody = response.errorBody()?.string()
+                    showError(errorBody ?: "Invalid username or password.")
                 }
             } catch (e: CancellationException) {
                 throw e

@@ -6,6 +6,10 @@ import okhttp3.Response
 
 class AuthInterceptor : Interceptor {
 
+    companion object {
+        var onUnauthorized: (() -> Unit)? = null
+    }
+
     override fun intercept(chain: Interceptor.Chain): Response {
         val originalRequest = chain.request()
         val token = TokenManager.getToken()
@@ -18,6 +22,13 @@ class AuthInterceptor : Interceptor {
             originalRequest
         }
 
-        return chain.proceed(newRequest)
+        val response = chain.proceed(newRequest)
+
+        if (response.code == 401) {
+            TokenManager.clear()
+            onUnauthorized?.invoke()
+        }
+
+        return response
     }
 }

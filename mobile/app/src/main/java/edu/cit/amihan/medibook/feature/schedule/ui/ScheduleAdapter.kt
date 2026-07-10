@@ -23,7 +23,7 @@ class ScheduleAdapter(
 
     override fun onBindViewHolder(holder: ScheduleViewHolder, position: Int) {
         val schedule = schedules[position]
-        holder.binding.tvSlotTime.text = "${schedule.startTime}  →  ${schedule.endTime}"
+        holder.binding.tvSlotTime.text = "${schedule.startTime ?: ""}  →  ${schedule.endTime ?: ""}"
         holder.binding.root.setOnClickListener { onSlotClick(schedule) }
     }
 

@@ -4,8 +4,10 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import android.content.Intent
 import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.databinding.ActivityAppointmentHistoryBinding
+import edu.cit.amihan.medibook.feature.auth.ui.dashboard.DashboardActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -23,7 +25,12 @@ class AppointmentHistoryActivity : AppCompatActivity() {
         binding.rvAppointments.layoutManager = LinearLayoutManager(this)
         binding.rvAppointments.adapter = adapter
 
-        fetchAppointments()
+        binding.tvHome.setOnClickListener {
+            startActivity(Intent(this, DashboardActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            })
+            finish()
+        }
     }
 
     override fun onResume() {

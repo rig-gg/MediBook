@@ -10,7 +10,7 @@ import edu.cit.amihan.medibook.core.network.RetrofitClient
 import edu.cit.amihan.medibook.core.utils.TokenManager
 import edu.cit.amihan.medibook.databinding.ActivityRegisterBinding
 import edu.cit.amihan.medibook.feature.auth.model.RegisterRequest
-import edu.cit.amihan.medibook.feature.doctor.ui.DoctorListActivity
+import edu.cit.amihan.medibook.feature.auth.ui.dashboard.DashboardActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import java.util.Calendar
@@ -91,19 +91,19 @@ class RegisterActivity : AppCompatActivity() {
                     val authResponse = response.body()!!
 
                     TokenManager.saveSession(
-                        token = authResponse.token,
+                        token = authResponse.token ?: "",
                         userId = authResponse.userId,
-                        fullName = authResponse.fullName,
-                        role = authResponse.role
+                        fullName = authResponse.fullName ?: "Patient",
+                        role = authResponse.role ?: ""
                     )
 
                     Toast.makeText(
                         this@RegisterActivity,
-                        "Welcome, ${authResponse.fullName}!",
+                        "Welcome, ${authResponse.fullName ?: "Patient"}!",
                         Toast.LENGTH_SHORT
                     ).show()
 
-                    startActivity(Intent(this@RegisterActivity, DoctorListActivity::class.java))
+                    startActivity(Intent(this@RegisterActivity, DashboardActivity::class.java))
                     finish()
                 } else {
                     showError(response.errorBody()?.string() ?: "Registration failed. Please try again.")

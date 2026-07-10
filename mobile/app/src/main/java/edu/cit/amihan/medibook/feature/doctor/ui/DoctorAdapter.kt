@@ -23,9 +23,9 @@ class DoctorAdapter(
 
     override fun onBindViewHolder(holder: DoctorViewHolder, position: Int) {
         val doctor = doctors[position]
-        holder.binding.tvDoctorName.text = doctor.fullName
+        holder.binding.tvDoctorName.text = doctor.fullName ?: "Unknown"
         holder.binding.tvSpecialization.text = doctor.specialization ?: "General"
-        holder.binding.tvContact.text = "${doctor.contactNumber ?: ""}  •  ${doctor.email}"
+        holder.binding.tvContact.text = "${doctor.contactNumber ?: ""}  •  ${doctor.email ?: ""}"
         holder.binding.root.setOnClickListener { onDoctorClick(doctor) }
     }
 
