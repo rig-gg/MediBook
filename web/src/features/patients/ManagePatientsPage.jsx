@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { getPatients } from './patientService';
 
+const inputClasses =
+  'w-full rounded-lg border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-sm text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-panel-accent)]/40 focus:border-[var(--color-panel-accent)] transition';
+
 const ManagePatientsPage = () => {
   const [patients, setPatients] = useState([]);
   const [search, setSearch] = useState('');
@@ -45,8 +48,8 @@ const ManagePatientsPage = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto">
-      <h1 className="text-xl font-semibold text-slate-800 mb-4">Patients</h1>
+    <div className="max-w-4xl">
+      <h1 className="text-xl font-semibold text-[var(--color-ink)] mb-4">Patients</h1>
 
       <form onSubmit={handleSearch} className="flex gap-2 mb-6">
         <input
@@ -54,11 +57,11 @@ const ManagePatientsPage = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search by name, email, or contact number"
-          className="flex-1 border border-slate-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-400"
+          className={inputClasses}
         />
         <button
           type="submit"
-          className="bg-slate-800 text-white text-sm px-4 py-2 rounded-md hover:bg-slate-700"
+          className="bg-[var(--color-vital)] hover:bg-[#ff5643] text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition shadow-sm shadow-[var(--color-vital)]/20"
         >
           Search
         </button>
@@ -66,36 +69,36 @@ const ManagePatientsPage = () => {
           <button
             type="button"
             onClick={handleClear}
-            className="text-sm text-slate-500 px-3 py-2 hover:text-slate-700"
+            className="text-sm text-[var(--color-ink-soft)] px-3 py-2.5 hover:text-[var(--color-ink)] transition"
           >
             Clear
           </button>
         )}
       </form>
 
-      {loading && <p className="text-sm text-slate-500">Loading patients...</p>}
+      {loading && <p className="text-sm text-[var(--color-ink-soft)]">Loading patients...</p>}
 
       {!loading && error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-4 py-3">
+        <p className="text-sm text-[var(--color-vital)] bg-red-50 border border-red-200 rounded-lg px-4 py-3">
           {error}
         </p>
       )}
 
       {!loading && !error && patients.length === 0 && (
-        <p className="text-sm text-slate-500">No patients found.</p>
+        <p className="text-sm text-[var(--color-ink-soft)]">No patients found.</p>
       )}
 
       {!loading && !error && patients.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-md divide-y divide-slate-100">
+        <div className="bg-white border border-[var(--color-border)] rounded-lg divide-y divide-[var(--color-border)]">
           {patients.map((p) => (
-            <div key={p.patientId} className="px-4 py-3 flex justify-between items-center">
+            <div key={p.patientId} className="px-5 py-4 flex justify-between items-center">
               <div>
-                <p className="font-medium text-slate-800">{p.fullName}</p>
-                <p className="text-sm text-slate-500">{p.email}</p>
+                <p className="font-medium text-[var(--color-ink)]">{p.fullName}</p>
+                <p className="text-sm text-[var(--color-ink-soft)]">{p.email}</p>
               </div>
-              <div className="text-right text-sm text-slate-500">
-                <p>{p.contactNumber || '—'}</p>
-                <p>{p.dateOfBirth || '—'}</p>
+              <div className="text-right text-sm text-[var(--color-ink-soft)]">
+                <p>{p.contactNumber || '\u2014'}</p>
+                <p>{p.dateOfBirth || '\u2014'}</p>
               </div>
             </div>
           ))}

@@ -8,6 +8,9 @@ const statusStyles = {
   COMPLETED: 'bg-blue-50 text-blue-700 border-blue-200',
 };
 
+const selectClasses =
+  'rounded-lg border border-[var(--color-border)] bg-white px-3 py-2.5 text-sm text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-panel-accent)]/40 focus:border-[var(--color-panel-accent)] transition';
+
 const AppointmentManagementPage = () => {
   const [appointments, setAppointments] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
@@ -64,7 +67,7 @@ const AppointmentManagementPage = () => {
         <select
           value={statusFilter}
           onChange={handleFilterChange}
-          className="rounded-lg border border-[var(--color-border)] bg-white px-3 py-2 text-sm"
+          className={selectClasses}
         >
           <option value="">All Statuses</option>
           <option value="PENDING">Pending</option>
@@ -81,7 +84,7 @@ const AppointmentManagementPage = () => {
       {loading && <p className="text-sm text-[var(--color-ink-soft)]">Loading appointments...</p>}
 
       {!loading && error && (
-        <p className="text-sm text-[var(--color-vital)] bg-red-50 border border-red-200 rounded-md px-4 py-3">
+        <p className="text-sm text-[var(--color-vital)] bg-red-50 border border-red-200 rounded-lg px-4 py-3">
           {error}
         </p>
       )}
@@ -93,7 +96,7 @@ const AppointmentManagementPage = () => {
       {!loading && !error && appointments.length > 0 && (
         <div className="bg-white border border-[var(--color-border)] rounded-lg divide-y divide-[var(--color-border)]">
           {appointments.map((appt) => (
-            <div key={appt.appointmentId} className="px-4 py-3 flex items-center justify-between">
+            <div key={appt.appointmentId} className="px-5 py-4 flex items-center justify-between">
               <div>
                 <p className="font-medium text-[var(--color-ink)]">{appt.patientName}</p>
                 <p className="text-sm text-[var(--color-ink-soft)]">
@@ -112,13 +115,13 @@ const AppointmentManagementPage = () => {
                   <>
                     <button
                       onClick={() => handleAction(appt.appointmentId, 'CONFIRMED')}
-                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
+                      className="text-sm text-emerald-600 hover:text-emerald-700 font-medium transition"
                     >
                       Approve
                     </button>
                     <button
                       onClick={() => handleAction(appt.appointmentId, 'CANCELLED')}
-                      className="text-sm text-red-600 hover:text-red-700 font-medium"
+                      className="text-sm text-[var(--color-vital)] hover:text-[#ff5643] font-medium transition"
                     >
                       Cancel
                     </button>
@@ -128,7 +131,7 @@ const AppointmentManagementPage = () => {
                 {appt.status === 'CONFIRMED' && (
                   <button
                     onClick={() => handleAction(appt.appointmentId, 'COMPLETED')}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-sm text-[var(--color-panel-accent)] hover:text-[var(--color-panel)] font-medium transition"
                   >
                     Mark Completed
                   </button>

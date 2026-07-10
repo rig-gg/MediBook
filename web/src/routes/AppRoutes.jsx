@@ -10,9 +10,22 @@ import DoctorRecordsPage from '../features/records/DoctorRecordsPage';
 import DoctorAppointmentQueuePage from '../features/appointments/DoctorAppointmentQueuePage';
 import CreateSchedulePage from '../features/schedules/CreateSchedulePage';
 import AppointmentManagementPage from '../features/appointments/AppointmentManagementPage';
+import ManageStaffPage from '../features/staff/ManageStaffPage';
 
 const DashboardHome = () => (
-  <div className="text-slate-600 text-sm">Welcome to your MediBook dashboard.</div>
+  <div className="max-w-2xl">
+    <div className="rounded-xl border border-[var(--color-border)] bg-white p-8">
+      <p className="font-mono text-xs tracking-[0.2em] uppercase text-[var(--color-panel-accent)] mb-2">
+        Clinic Operations Portal
+      </p>
+      <h1 className="font-display text-3xl font-semibold text-[var(--color-ink)] mb-3">
+        Welcome back.
+      </h1>
+      <p className="text-sm text-[var(--color-ink-soft)] leading-relaxed">
+        Manage appointments, doctors, patients, and schedules — all from one place.
+      </p>
+    </div>
+  </div>
 );
 
 const AppRoutes = () => {
@@ -40,6 +53,14 @@ const AppRoutes = () => {
         <Route path="/dashboard" element={<DashboardHome />} />
         <Route path="/doctors" element={<DoctorListPage />} />
         <Route path="/patients" element={<ManagePatientsPage />} />
+        <Route
+          path="/staff"
+          element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <ManageStaffPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/doctors/manage"
           element={

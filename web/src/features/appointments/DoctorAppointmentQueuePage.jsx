@@ -95,29 +95,29 @@ const DoctorAppointmentQueuePage = () => {
 
   const statusBadge = (status) => {
     const colors = {
-      PENDING: 'bg-amber-100 text-amber-700',
-      CONFIRMED: 'bg-emerald-100 text-emerald-700',
-      COMPLETED: 'bg-blue-100 text-blue-700',
-      CANCELLED: 'bg-slate-100 text-slate-500',
+      PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
+      CONFIRMED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      COMPLETED: 'bg-blue-50 text-blue-700 border-blue-200',
+      CANCELLED: 'bg-slate-100 text-slate-500 border-slate-200',
     };
-    return `text-xs font-semibold px-2.5 py-1 rounded-full ${colors[status] || 'bg-slate-100 text-slate-500'}`;
+    return `text-xs font-mono uppercase px-2 py-1 rounded border ${colors[status] || 'bg-slate-100 text-slate-500 border-slate-200'}`;
   };
 
   return (
     <div className="max-w-4xl">
-      <h1 className="text-xl font-semibold text-slate-800 mb-4">My Appointment Queue</h1>
+      <h1 className="text-xl font-semibold text-[var(--color-ink)] mb-4">My Appointment Queue</h1>
 
       {message && <p className="text-sm text-emerald-600 font-medium mb-3">{message}</p>}
 
-      <div className="flex gap-2 mb-4">
+      <div className="flex gap-2 mb-4 flex-wrap">
         {STATUS_OPTIONS.map((s) => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
-            className={`text-sm px-3 py-1.5 rounded-md font-medium transition ${
+            className={`text-sm px-3 py-1.5 rounded-lg font-medium transition ${
               statusFilter === s
-                ? 'bg-slate-800 text-white'
-                : 'bg-white text-slate-600 border border-slate-300 hover:bg-slate-100'
+                ? 'bg-[var(--color-panel)] text-white'
+                : 'bg-white text-[var(--color-ink-soft)] border border-[var(--color-border)] hover:border-[var(--color-panel-accent)]'
             }`}
           >
             {s.charAt(0) + s.slice(1).toLowerCase()}
@@ -125,21 +125,21 @@ const DoctorAppointmentQueuePage = () => {
         ))}
       </div>
 
-      {loading && <p className="text-sm text-slate-500">Loading...</p>}
+      {loading && <p className="text-sm text-[var(--color-ink-soft)]">Loading...</p>}
       {!loading && error && (
-        <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-md px-4 py-3">{error}</p>
+        <p className="text-sm text-[var(--color-vital)] bg-red-50 border border-red-200 rounded-lg px-4 py-3">{error}</p>
       )}
       {!loading && !error && appointments.length === 0 && (
-        <p className="text-sm text-slate-500">No appointments found.</p>
+        <p className="text-sm text-[var(--color-ink-soft)]">No appointments found.</p>
       )}
 
       {!loading && !error && appointments.length > 0 && (
-        <div className="bg-white border border-slate-200 rounded-lg divide-y divide-slate-100">
+        <div className="bg-white border border-[var(--color-border)] rounded-lg divide-y divide-[var(--color-border)]">
           {appointments.map((appt) => (
-            <div key={appt.appointmentId} className="px-4 py-3 flex items-center justify-between">
+            <div key={appt.appointmentId} className="px-5 py-4 flex items-center justify-between">
               <div>
-                <p className="font-medium text-slate-800">{appt.patientName}</p>
-                <p className="text-sm text-slate-500">
+                <p className="font-medium text-[var(--color-ink)]">{appt.patientName}</p>
+                <p className="text-sm text-[var(--color-ink-soft)]">
                   {new Date(appt.startTime).toLocaleString()}
                 </p>
               </div>
@@ -148,7 +148,7 @@ const DoctorAppointmentQueuePage = () => {
                 {appt.status === 'CONFIRMED' && (
                   <button
                     onClick={() => openRecord(appt)}
-                    className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                    className="text-sm text-[var(--color-panel-accent)] hover:text-[var(--color-panel)] font-medium transition"
                   >
                     Write Record
                   </button>
@@ -162,47 +162,47 @@ const DoctorAppointmentQueuePage = () => {
       {recordFor && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-xl w-full max-w-md p-5 shadow-xl">
-            <h2 className="text-lg font-semibold text-slate-800 mb-1">Consultation Record</h2>
-            <p className="text-sm text-slate-500 mb-4">
+            <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-1">Consultation Record</h2>
+            <p className="text-sm text-[var(--color-ink-soft)] mb-4">
               {recordFor.patientName} — {new Date(recordFor.startTime).toLocaleString()}
             </p>
             <form onSubmit={submitRecord} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium font-mono uppercase tracking-wide text-slate-500 mb-1.5">
+                <label className="block text-xs font-medium font-mono uppercase tracking-wide text-[var(--color-ink-soft)] mb-1.5">
                   Diagnosis
                 </label>
                 <input
                   value={diagnosis}
                   onChange={(e) => setDiagnosis(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm"
+                  className="w-full rounded-lg border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-sm text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-panel-accent)]/40 focus:border-[var(--color-panel-accent)] transition"
                   placeholder="e.g. Hypertension, Stage 1"
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium font-mono uppercase tracking-wide text-slate-500 mb-1.5">
+                <label className="block text-xs font-medium font-mono uppercase tracking-wide text-[var(--color-ink-soft)] mb-1.5">
                   Consultation Notes
                 </label>
                 <textarea
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   rows={4}
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm"
+                  className="w-full rounded-lg border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-sm text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-panel-accent)]/40 focus:border-[var(--color-panel-accent)] transition"
                   placeholder="Observations, advice, follow-up..."
                 />
               </div>
-              {recordError && <p className="text-sm text-red-600 font-medium">{recordError}</p>}
+              {recordError && <p className="text-sm text-[var(--color-vital)] font-medium">{recordError}</p>}
               <div className="flex gap-2 pt-1">
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white text-sm font-semibold py-2.5 rounded-lg transition"
+                  className="flex-1 bg-[var(--color-panel-accent)] hover:bg-[var(--color-panel)] disabled:opacity-40 text-white text-sm font-semibold py-2.5 rounded-lg transition"
                 >
                   {saving ? 'Saving...' : 'Save & Complete'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setRecordFor(null)}
-                  className="px-4 text-sm text-slate-600 hover:text-slate-900 font-medium"
+                  className="px-4 text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] font-medium transition"
                 >
                   Cancel
                 </button>
