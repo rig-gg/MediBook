@@ -4,6 +4,12 @@ import { getDoctorByUserId } from '../doctors/doctorService';
 import { getDoctorAppointments } from './doctorAppointmentService';
 import { createRecord } from '../records/recordService';
 
+const inputClasses =
+  'w-full rounded-lg border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-sm text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-panel-accent)]/40 focus:border-[var(--color-panel-accent)] transition';
+
+const labelClasses =
+  'block text-xs font-medium font-mono uppercase tracking-wide text-[var(--color-ink-soft)] mb-1.5';
+
 const STATUS_OPTIONS = ['ALL', 'PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED'];
 
 const DoctorAppointmentQueuePage = () => {
@@ -94,20 +100,24 @@ const DoctorAppointmentQueuePage = () => {
   };
 
   const statusBadge = (status) => {
-    const colors = {
-      PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
-      CONFIRMED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-      COMPLETED: 'bg-blue-50 text-blue-700 border-blue-200',
-      CANCELLED: 'bg-slate-100 text-slate-500 border-slate-200',
+    const map = {
+      PENDING: 'badge badge-pending',
+      CONFIRMED: 'badge badge-confirmed',
+      COMPLETED: 'badge badge-completed',
+      CANCELLED: 'badge badge-cancelled',
     };
-    return `text-xs font-mono uppercase px-2 py-1 rounded border ${colors[status] || 'bg-slate-100 text-slate-500 border-slate-200'}`;
+    return map[status] || 'badge badge-cancelled';
   };
 
   return (
-    <div className="max-w-4xl">
-      <h1 className="text-xl font-semibold text-[var(--color-ink)] mb-4">My Appointment Queue</h1>
+    <div className="animate-fade-in-up">
+      <div className="dashboard-header">
+        <p className="dashboard-header-eyebrow">Doctor Workspace</p>
+        <h1 className="dashboard-header-title">My Appointment Queue</h1>
+        <p className="dashboard-header-subtitle">View your upcoming appointments and write consultation records.</p>
+      </div>
 
-      {message && <p className="text-sm text-emerald-600 font-medium mb-3">{message}</p>}
+      {message && <p className="text-sm text-emerald-600 font-medium mb-3 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">{message}</p>}
 
       <div className="flex gap-2 mb-4 flex-wrap">
         {STATUS_OPTIONS.map((s) => (
@@ -125,18 +135,24 @@ const DoctorAppointmentQueuePage = () => {
         ))}
       </div>
 
-      {loading && <p className="text-sm text-[var(--color-ink-soft)]">Loading...</p>}
+      {loading && (
+        <div className="flex items-center gap-2 text-sm text-[var(--color-ink-soft)]">
+          <span className="spinner" /> Loading...
+        </div>
+      )}
       {!loading && error && (
         <p className="text-sm text-[var(--color-vital)] bg-red-50 border border-red-200 rounded-lg px-4 py-3">{error}</p>
       )}
       {!loading && !error && appointments.length === 0 && (
-        <p className="text-sm text-[var(--color-ink-soft)]">No appointments found.</p>
+        <div className="dashboard-card p-8 text-center">
+          <p className="text-sm text-[var(--color-ink-soft)]">No appointments found.</p>
+        </div>
       )}
 
       {!loading && !error && appointments.length > 0 && (
-        <div className="bg-white border border-[var(--color-border)] rounded-lg divide-y divide-[var(--color-border)]">
+        <div className="dashboard-card divide-y divide-[var(--color-border)]">
           {appointments.map((appt) => (
-            <div key={appt.appointmentId} className="px-5 py-4 flex items-center justify-between">
+            <div key={appt.appointmentId} className="px-5 py-4 flex items-center justify-between hover:bg-[var(--color-bg)] transition">
               <div>
                 <p className="font-medium text-[var(--color-ink)]">{appt.patientName}</p>
                 <p className="text-sm text-[var(--color-ink-soft)]">
@@ -144,7 +160,10 @@ const DoctorAppointmentQueuePage = () => {
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <span className={statusBadge(appt.status)}>{appt.status}</span>
+                <span className={statusBadge(appt.status)}>
+                  <span className="badge-dot" />
+                  {appt.status}
+                </span>
                 {appt.status === 'CONFIRMED' && (
                   <button
                     onClick={() => openRecord(appt)}
@@ -161,51 +180,24 @@ const DoctorAppointmentQueuePage = () => {
 
       {recordFor && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-xl w-full max-w-md p-5 shadow-xl">
+          <div className="bg-white rounded-xl w-full max-w-md p-5 shadow-xl animate-fade-in-up">
             <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-1">Consultation Record</h2>
             <p className="text-sm text-[var(--color-ink-soft)] mb-4">
-              {recordFor.patientName} — {new Date(recordFor.startTime).toLocaleString()}
+              {recordFor.patientName} &mdash; {new Date(recordFor.startTime).toLocaleString()}
             </p>
             <form onSubmit={submitRecord} className="space-y-3">
               <div>
-                <label className="block text-xs font-medium font-mono uppercase tracking-wide text-[var(--color-ink-soft)] mb-1.5">
-                  Diagnosis
-                </label>
-                <input
-                  value={diagnosis}
-                  onChange={(e) => setDiagnosis(e.target.value)}
-                  className="w-full rounded-lg border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-sm text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-panel-accent)]/40 focus:border-[var(--color-panel-accent)] transition"
-                  placeholder="e.g. Hypertension, Stage 1"
-                />
+                <label className={labelClasses}>Diagnosis</label>
+                <input value={diagnosis} onChange={(e) => setDiagnosis(e.target.value)} className={inputClasses} placeholder="e.g. Hypertension, Stage 1" />
               </div>
               <div>
-                <label className="block text-xs font-medium font-mono uppercase tracking-wide text-[var(--color-ink-soft)] mb-1.5">
-                  Consultation Notes
-                </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={4}
-                  className="w-full rounded-lg border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-sm text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-panel-accent)]/40 focus:border-[var(--color-panel-accent)] transition"
-                  placeholder="Observations, advice, follow-up..."
-                />
+                <label className={labelClasses}>Consultation Notes</label>
+                <textarea value={notes} onChange={(e) => setNotes(e.target.value)} rows={4} className={inputClasses} placeholder="Observations, advice, follow-up..." />
               </div>
               {recordError && <p className="text-sm text-[var(--color-vital)] font-medium">{recordError}</p>}
               <div className="flex gap-2 pt-1">
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex-1 bg-[var(--color-panel-accent)] hover:bg-[var(--color-panel)] disabled:opacity-40 text-white text-sm font-semibold py-2.5 rounded-lg transition"
-                >
-                  {saving ? 'Saving...' : 'Save & Complete'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRecordFor(null)}
-                  className="px-4 text-sm text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] font-medium transition"
-                >
-                  Cancel
-                </button>
+                <button type="submit" disabled={saving} className="btn-primary flex-1">{saving ? 'Saving...' : 'Save & Complete'}</button>
+                <button type="button" onClick={() => setRecordFor(null)} className="btn-ghost">Cancel</button>
               </div>
             </form>
           </div>

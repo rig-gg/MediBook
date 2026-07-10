@@ -68,8 +68,12 @@ const ManageDoctorsPage = () => {
   };
 
   return (
-    <div className="max-w-4xl">
-      <h1 className="text-xl font-semibold text-[var(--color-ink)] mb-4">Manage Doctors</h1>
+    <div className="animate-fade-in-up">
+      <div className="dashboard-header">
+        <p className="dashboard-header-eyebrow">Administration</p>
+        <h1 className="dashboard-header-title">Manage Doctors</h1>
+        <p className="dashboard-header-subtitle">View and update doctor profiles.</p>
+      </div>
 
       <form onSubmit={handleSearch} className="flex gap-2 mb-6">
         <input
@@ -77,33 +81,34 @@ const ManageDoctorsPage = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Filter by specialization"
-          className={inputClasses}
+          className={inputClasses + ' max-w-xs'}
         />
-        <button type="submit" className="bg-[var(--color-vital)] hover:bg-[#ff5643] text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition shadow-sm shadow-[var(--color-vital)]/20">
-          Search
-        </button>
+        <button type="submit" className="btn-accent">Search</button>
         {search && (
-          <button type="button" onClick={() => { setSearch(''); fetchDoctors(''); }}
-            className="text-sm text-[var(--color-ink-soft)] px-3 py-2.5 hover:text-[var(--color-ink)] transition">
-            Clear
-          </button>
+          <button type="button" onClick={() => { setSearch(''); fetchDoctors(''); }} className="btn-ghost">Clear</button>
         )}
       </form>
 
-      {loading && <p className="text-sm text-[var(--color-ink-soft)]">Loading doctors...</p>}
+      {loading && (
+        <div className="flex items-center gap-2 text-sm text-[var(--color-ink-soft)]">
+          <span className="spinner" /> Loading doctors...
+        </div>
+      )}
 
       {!loading && error && (
         <p className="text-sm text-[var(--color-vital)] bg-red-50 border border-red-200 rounded-lg px-4 py-3">{error}</p>
       )}
 
       {!loading && !error && doctors.length === 0 && (
-        <p className="text-sm text-[var(--color-ink-soft)]">No doctors found.</p>
+        <div className="dashboard-card p-8 text-center">
+          <p className="text-sm text-[var(--color-ink-soft)]">No doctors found.</p>
+        </div>
       )}
 
       {!loading && !error && doctors.length > 0 && (
-        <div className="bg-white border border-[var(--color-border)] rounded-lg divide-y divide-[var(--color-border)]">
+        <div className="dashboard-card divide-y divide-[var(--color-border)]">
           {doctors.map((doc) => (
-            <div key={doc.doctorId} className="px-5 py-4 flex justify-between items-center">
+            <div key={doc.doctorId} className="px-5 py-4 flex justify-between items-center hover:bg-[var(--color-bg)] transition">
               <div>
                 <p className="font-medium text-[var(--color-ink)]">{doc.fullName}</p>
                 <p className="text-sm text-[var(--color-ink-soft)]">{doc.specialization || 'General'}</p>
@@ -127,51 +132,24 @@ const ManageDoctorsPage = () => {
 
       {editingDoctor && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-xl">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-xl animate-fade-in-up">
             <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-4">Edit Doctor</h2>
             <form onSubmit={handleSave} className="space-y-4">
               <div>
                 <label className={labelClasses}>Full Name</label>
-                <input
-                  type="text" required
-                  value={form.fullName}
-                  onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                  className={inputClasses}
-                />
+                <input type="text" required value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} className={inputClasses} />
               </div>
               <div>
                 <label className={labelClasses}>Specialization</label>
-                <input
-                  type="text"
-                  value={form.specialization}
-                  onChange={(e) => setForm({ ...form, specialization: e.target.value })}
-                  className={inputClasses}
-                />
+                <input type="text" value={form.specialization} onChange={(e) => setForm({ ...form, specialization: e.target.value })} className={inputClasses} />
               </div>
               <div>
                 <label className={labelClasses}>Contact Number</label>
-                <input
-                  type="text"
-                  value={form.contactNumber}
-                  onChange={(e) => setForm({ ...form, contactNumber: e.target.value })}
-                  className={inputClasses}
-                />
+                <input type="text" value={form.contactNumber} onChange={(e) => setForm({ ...form, contactNumber: e.target.value })} className={inputClasses} />
               </div>
               <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingDoctor(null)}
-                  className="text-sm text-[var(--color-ink-soft)] px-4 py-2 rounded-lg hover:bg-[var(--color-border)] transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-[var(--color-panel-accent)] hover:bg-[var(--color-panel)] disabled:opacity-40 text-white text-sm font-semibold px-4 py-2 rounded-lg transition"
-                >
-                  {saving ? 'Saving...' : 'Save'}
-                </button>
+                <button type="button" onClick={() => setEditingDoctor(null)} className="btn-ghost">Cancel</button>
+                <button type="submit" disabled={saving} className="btn-primary">{saving ? 'Saving...' : 'Save'}</button>
               </div>
             </form>
           </div>

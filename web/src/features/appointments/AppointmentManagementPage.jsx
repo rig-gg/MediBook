@@ -1,13 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getAllAppointments, updateAppointmentStatus } from './appointmentService';
 
-const statusStyles = {
-  PENDING: 'bg-amber-50 text-amber-700 border-amber-200',
-  CONFIRMED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  CANCELLED: 'bg-slate-100 text-slate-500 border-slate-200',
-  COMPLETED: 'bg-blue-50 text-blue-700 border-blue-200',
-};
-
 const selectClasses =
   'rounded-lg border border-[var(--color-border)] bg-white px-3 py-2.5 text-sm text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-panel-accent)]/40 focus:border-[var(--color-panel-accent)] transition';
 
@@ -59,16 +52,27 @@ const AppointmentManagementPage = () => {
     }
   };
 
-  return (
-    <div className="max-w-4xl">
-      <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-semibold text-[var(--color-ink)]">Appointments</h1>
+  const statusBadge = (status) => {
+    const map = {
+      PENDING: 'badge badge-pending',
+      CONFIRMED: 'badge badge-confirmed',
+      CANCELLED: 'badge badge-cancelled',
+      COMPLETED: 'badge badge-completed',
+    };
+    return map[status] || 'badge badge-cancelled';
+  };
 
-        <select
-          value={statusFilter}
-          onChange={handleFilterChange}
-          className={selectClasses}
-        >
+  return (
+    <div className="animate-fade-in-up">
+      <div className="dashboard-header">
+        <p className="dashboard-header-eyebrow">Scheduling</p>
+        <h1 className="dashboard-header-title">Appointments</h1>
+        <p className="dashboard-header-subtitle">Manage and update appointment statuses across the clinic.</p>
+      </div>
+
+      <div className="flex items-center justify-between mb-4">
+        <div />
+        <select value={statusFilter} onChange={handleFilterChange} className={selectClasses}>
           <option value="">All Statuses</option>
           <option value="PENDING">Pending</option>
           <option value="CONFIRMED">Confirmed</option>
@@ -81,33 +85,36 @@ const AppointmentManagementPage = () => {
         <p className="text-sm text-[var(--color-vital)] font-medium mb-3">{actionError}</p>
       )}
 
-      {loading && <p className="text-sm text-[var(--color-ink-soft)]">Loading appointments...</p>}
+      {loading && (
+        <div className="flex items-center gap-2 text-sm text-[var(--color-ink-soft)]">
+          <span className="spinner" /> Loading appointments...
+        </div>
+      )}
 
       {!loading && error && (
-        <p className="text-sm text-[var(--color-vital)] bg-red-50 border border-red-200 rounded-lg px-4 py-3">
-          {error}
-        </p>
+        <p className="text-sm text-[var(--color-vital)] bg-red-50 border border-red-200 rounded-lg px-4 py-3">{error}</p>
       )}
 
       {!loading && !error && appointments.length === 0 && (
-        <p className="text-sm text-[var(--color-ink-soft)]">No appointments found.</p>
+        <div className="dashboard-card p-8 text-center">
+          <p className="text-sm text-[var(--color-ink-soft)]">No appointments found.</p>
+        </div>
       )}
 
       {!loading && !error && appointments.length > 0 && (
-        <div className="bg-white border border-[var(--color-border)] rounded-lg divide-y divide-[var(--color-border)]">
+        <div className="dashboard-card divide-y divide-[var(--color-border)]">
           {appointments.map((appt) => (
-            <div key={appt.appointmentId} className="px-5 py-4 flex items-center justify-between">
+            <div key={appt.appointmentId} className="px-5 py-4 flex items-center justify-between hover:bg-[var(--color-bg)] transition">
               <div>
                 <p className="font-medium text-[var(--color-ink)]">{appt.patientName}</p>
                 <p className="text-sm text-[var(--color-ink-soft)]">
-                  with {appt.doctorName} — {new Date(appt.startTime).toLocaleString()}
+                  with {appt.doctorName} &mdash; {new Date(appt.startTime).toLocaleString()}
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
-                <span
-                  className={`text-xs font-mono uppercase px-2 py-1 rounded border ${statusStyles[appt.status]}`}
-                >
+                <span className={statusBadge(appt.status)}>
+                  <span className="badge-dot" />
                   {appt.status}
                 </span>
 

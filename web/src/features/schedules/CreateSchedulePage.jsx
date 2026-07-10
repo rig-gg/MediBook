@@ -61,66 +61,49 @@ const CreateSchedulePage = () => {
   };
 
   return (
-    <div className="max-w-lg">
-      <h1 className="text-xl font-semibold text-[var(--color-ink)] mb-4">
-        Add Doctor Schedule Slot
-      </h1>
+    <div className="animate-fade-in-up max-w-lg">
+      <div className="dashboard-header">
+        <p className="dashboard-header-eyebrow">Scheduling</p>
+        <h1 className="dashboard-header-title">Add Doctor Schedule Slot</h1>
+        <p className="dashboard-header-subtitle">Create a new available time slot for a doctor.</p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className={labelClasses}>Doctor</label>
-          <select
-            name="doctorId"
-            value={formData.doctorId}
-            onChange={handleChange}
-            className={inputClasses}
-          >
-            <option value="">Select a doctor</option>
-            {doctors.map((doc) => (
-              <option key={doc.doctorId} value={doc.doctorId}>
-                {doc.fullName} — {doc.specialization || 'General'}
-              </option>
-            ))}
-          </select>
-        </div>
+      <div className="dashboard-card p-6">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className={labelClasses}>Doctor</label>
+            <select name="doctorId" value={formData.doctorId} onChange={handleChange} className={inputClasses}>
+              <option value="">Select a doctor</option>
+              {doctors.map((doc) => (
+                <option key={doc.doctorId} value={doc.doctorId}>
+                  {doc.fullName} &mdash; {doc.specialization || 'General'}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div>
-          <label className={labelClasses}>Start Time</label>
-          <input
-            type="datetime-local"
-            name="startTime"
-            value={formData.startTime}
-            onChange={handleChange}
-            className={inputClasses}
-          />
-        </div>
+          <div>
+            <label className={labelClasses}>Start Time</label>
+            <input type="datetime-local" name="startTime" value={formData.startTime} onChange={handleChange} className={inputClasses} />
+          </div>
 
-        <div>
-          <label className={labelClasses}>End Time</label>
-          <input
-            type="datetime-local"
-            name="endTime"
-            value={formData.endTime}
-            onChange={handleChange}
-            className={inputClasses}
-          />
-        </div>
+          <div>
+            <label className={labelClasses}>End Time</label>
+            <input type="datetime-local" name="endTime" value={formData.endTime} onChange={handleChange} className={inputClasses} />
+          </div>
 
-        {message && (
-          <p className="text-sm text-[var(--color-panel-accent)] font-medium">{message}</p>
-        )}
-        {error && (
-          <p className="text-sm text-[var(--color-vital)] font-medium">{error}</p>
-        )}
+          {message && (
+            <p className="text-sm text-[var(--color-panel-accent)] font-medium bg-teal-50 border border-teal-200 rounded-lg px-4 py-3">{message}</p>
+          )}
+          {error && (
+            <p className="text-sm text-[var(--color-vital)] font-medium">{error}</p>
+          )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-[var(--color-vital)] hover:bg-[#ff5643] disabled:opacity-40 text-white text-sm font-semibold py-2.5 rounded-lg transition shadow-sm shadow-[var(--color-vital)]/20"
-        >
-          {loading ? 'Creating…' : 'Create Slot'}
-        </button>
-      </form>
+          <button type="submit" disabled={loading} className="btn-accent w-full">
+            {loading ? 'Creating...' : 'Create Slot'}
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
