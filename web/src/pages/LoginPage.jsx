@@ -26,6 +26,11 @@ const LoginPage = () => {
     try {
       const loggedInUser = await login(username, password);
 
+      if (loggedInUser.role === 'PATIENT') {
+        setError('PATIENT accounts can only access the mobile app. Please use the Android application.');
+        return;
+      }
+
       if (loggedInUser.role === 'ADMIN') {
         navigate('/admin/register');
       } else {
