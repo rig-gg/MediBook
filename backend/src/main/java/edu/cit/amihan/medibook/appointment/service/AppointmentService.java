@@ -6,6 +6,7 @@ import edu.cit.amihan.medibook.appointment.entity.Appointment;
 import edu.cit.amihan.medibook.appointment.entity.AppointmentStatus;
 import edu.cit.amihan.medibook.appointment.repository.AppointmentRepository;
 import edu.cit.amihan.medibook.common.exception.ResourceNotFoundException;
+import edu.cit.amihan.medibook.email.EmailService;
 import edu.cit.amihan.medibook.patient.entity.Patient;
 import edu.cit.amihan.medibook.patient.repository.PatientRepository;
 import edu.cit.amihan.medibook.schedule.entity.DoctorSchedule;
@@ -23,21 +24,17 @@ public class AppointmentService {
     private final AppointmentRepository appointmentRepository;
     private final DoctorScheduleRepository scheduleRepository;
     private final PatientRepository patientRepository;
+    private final EmailService emailService;
 
-    // @Transactional is required here — the pessimistic lock acquired by
-    // findByIdForUpdate() is only held for the duration of this transaction.
     @Transactional
     public AppointmentResponse bookAppointment(Long userId, AppointmentRequest request) {
         Patient patient = patientRepository.findByUserUserId(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for this account."));
 
-        // Row-level lock: any other concurrent booking attempt on this exact
-        // schedule_id blocks here until this transaction commits or rolls back.
         DoctorSchedule schedule = scheduleRepository.findByIdForUpdate(request.getScheduleId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Schedule not found with id: " + request.getScheduleId()));
 
-        // FR-006 / BR-003: reject if another request already claimed this slot
         if (!Boolean.TRUE.equals(schedule.getIsAvailable())) {
             throw new IllegalStateException("This time slot is no longer available.");
         }
@@ -54,25 +51,19 @@ public class AppointmentService {
         return AppointmentResponse.fromEntity(saved);
     }
 
-    // FR-004: staff approves, cancels, or modifies appointment status
     @Transactional
     public AppointmentResponse updateStatus(Long appointmentId, AppointmentStatus newStatus) {
         Appointment appointment = appointmentRepository.findById(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Appointment not found with id: " + appointmentId));
 
-        AppointmentStatus current = appointment.getStatus();
+        AppointmentStatus oldStatus = appointment.getStatus();
 
-        // BR-004: completed + recorded appointments are immutable
-        if (current == AppointmentStatus.COMPLETED) {
+        if (oldStatus == AppointmentStatus.COMPLETED) {
             throw new IllegalStateException("Completed appointments cannot be modified.");
         }
 
-        // State machine: enforce valid transitions
-        // PENDING  -> CONFIRMED | CANCELLED
-        // CONFIRMED -> COMPLETED | CANCELLED
-        // CANCELLED -> (no forward transitions, must stay cancelled)
-        boolean valid = switch (current) {
+        boolean valid = switch (oldStatus) {
             case PENDING   -> newStatus == AppointmentStatus.CONFIRMED || newStatus == AppointmentStatus.CANCELLED;
             case CONFIRMED -> newStatus == AppointmentStatus.COMPLETED || newStatus == AppointmentStatus.CANCELLED;
             case CANCELLED -> false;
@@ -81,17 +72,21 @@ public class AppointmentService {
 
         if (!valid) {
             throw new IllegalStateException(
-                    "Cannot transition appointment from " + current + " to " + newStatus + ".");
+                    "Cannot transition appointment from " + oldStatus + " to " + newStatus + ".");
         }
 
-        // If cancelling, free the slot back up for rebooking
         if (newStatus == AppointmentStatus.CANCELLED) {
             DoctorSchedule schedule = appointment.getSchedule();
             schedule.setIsAvailable(true);
         }
 
         appointment.setStatus(newStatus);
-        return AppointmentResponse.fromEntity(appointmentRepository.save(appointment));
+        Appointment saved = appointmentRepository.save(appointment);
+
+        // FR-011: send email notification on status change
+        emailService.sendStatusChangeEmail(saved, oldStatus, newStatus);
+
+        return AppointmentResponse.fromEntity(saved);
     }
 
     @Transactional(readOnly = true)
