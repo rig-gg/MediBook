@@ -1,7 +1,11 @@
 package edu.cit.amihan.medibook.record.dto;
 
+import edu.cit.amihan.medibook.fda.FdaDrugSuggestion;
 import edu.cit.amihan.medibook.record.entity.HealthRecord;
+
 import java.time.LocalDateTime;
+import java.util.List;
+
 
 public class HealthRecordResponse {
 
@@ -12,6 +16,7 @@ public class HealthRecordResponse {
     private String diagnosis;
     private String consultationNotes;
     private LocalDateTime recordedAt;
+    private List<FdaDrugSuggestion> fdaSuggestions;
 
     public static HealthRecordResponse fromEntity(HealthRecord rec) {
         HealthRecordResponse r = new HealthRecordResponse();
@@ -31,5 +36,6 @@ public class HealthRecordResponse {
     public String getPatientName() { return patientName; }
     public String getDiagnosis() { return diagnosis; }
     public String getConsultationNotes() { return consultationNotes; }
-    public LocalDateTime getRecordedAt() { return recordedAt; }
+    public LocalDateTime getRecordedAt() { return recordedAt; }public List<FdaDrugSuggestion> getFdaSuggestions() { return fdaSuggestions; }
+    public void setFdaSuggestions(List<FdaDrugSuggestion> fdaSuggestions) { this.fdaSuggestions = fdaSuggestions; }
 }
