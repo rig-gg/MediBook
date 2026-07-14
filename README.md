@@ -9,7 +9,7 @@ MediBook is an integrated client-server healthcare ecosystem built to replace ma
 
 The system is made up of three parts:
 
-- **Backend API** — Spring Boot REST API handling auth, appointments, schedules, records, and staff/doctor/patient management
+- **Backend API** — Spring Boot REST API handling auth, appointments, schedules, records, OpenFDA drug suggestions, and SMTP email notifications
 - **Web Application** — React + Vite dashboard for clinic staff, doctors, and administrators (teal/red design system)
 - **Mobile Application** — Android Kotlin app for patient self-service (registration, browsing doctors, booking appointments)
 
@@ -27,7 +27,7 @@ medibook/
 
 | Layer | Technology |
 |---|---|
-| Backend API | Spring Boot 4.1.0, Spring Security, Spring Data JPA |
+| Backend API | Spring Boot 4.1.0, Spring Security, Spring Data JPA, WebClient (OpenFDA), JavaMailSender (Mailtrap) |
 | Database | Supabase PostgreSQL |
 | Authentication | JWT (jjwt 0.12.5) + BCrypt password hashing |
 | Web App | React 18, Vite 5, Tailwind CSS v4, React Router 7, Axios |
@@ -93,7 +93,7 @@ medibook/
 ### Health Records
 | Method | Endpoint | Access | Purpose |
 |---|---|---|---|
-| POST | `/api/records/create` | DOCTOR | Create health record (completes appointment) |
+| POST | `/api/records/create` | DOCTOR | Create health record (completes appointment, returns FDA drug suggestions) |
 | GET | `/api/records/patient/{id}` | DOCTOR/STAFF | View patient records |
 | PUT | `/api/records/{id}` | DOCTOR | Update diagnosis/notes |
 
@@ -163,14 +163,13 @@ Open `mobile/` in Android Studio. The Retrofit base URL defaults to `http://10.0
 
 All core features are implemented and integrated:
 
-- **Backend:** Full REST API with 20+ endpoints, JWT auth, role-based access control, bean validation, DB-level queries with `@EntityGraph`, pessimistic locking for double-booking prevention
+- **Backend:** Full REST API with 20+ endpoints, JWT auth, role-based access control, bean validation, DB-level queries with `@EntityGraph`, pessimistic locking for double-booking prevention, OpenFDA drug classification suggestions (FR-010), SMTP email notifications via Mailtrap (FR-011)
 - **Web:** Complete dashboard with 11 routes, consistent teal/red design system, role-based navigation, error boundary, mounted-ref guard against StrictMode race conditions
 - **Mobile:** 5 activities with full auth flow (auto-login, logout, confirm password), Retrofit + OkHttp with timeouts and header-level logging
 - **Documentation:** SRS PDFs, UML diagrams (class, activity, sequence, use case, ERD), sprint traces, commit history summaries
 
 ### Not Yet Implemented
-- OpenFDA API integration for medical classification
-- SMTP email notifications via Mailtrap
+- (none — all FRs complete)
 
 ## Diagrams & Docs
 

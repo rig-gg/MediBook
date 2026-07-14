@@ -23,6 +23,7 @@ const DoctorRecordsPage = () => {
   const [saving, setSaving] = useState(false);
   const [recordError, setRecordError] = useState('');
   const [message, setMessage] = useState('');
+  const [fdaSuggestions, setFdaSuggestions] = useState([]);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -68,6 +69,7 @@ const DoctorRecordsPage = () => {
     setDiagnosis('');
     setNotes('');
     setRecordError('');
+    setFdaSuggestions([]);
   };
 
   const submitRecord = async (e) => {
@@ -79,12 +81,13 @@ const DoctorRecordsPage = () => {
     }
     setSaving(true);
     try {
-      await createRecord({
+      const result = await createRecord({
         appointmentId: recordFor.appointmentId,
         diagnosis,
         consultationNotes: notes,
       });
       setMessage(`Record saved for ${recordFor.patientName}. Appointment marked completed.`);
+      setFdaSuggestions(result.fdaSuggestions || []);
       setRecordFor(null);
       if (mountedRef.current) fetchConfirmed();
     } catch (err) {
@@ -103,6 +106,51 @@ const DoctorRecordsPage = () => {
       </div>
 
       {message && <p className="text-sm text-emerald-600 font-medium mb-3 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">{message}</p>}
+
+      {fdaSuggestions.length > 0 && (
+        <div className="dashboard-card p-5 mb-4 animate-fade-in-up">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="font-mono text-[11px] uppercase tracking-wide text-[var(--color-panel-accent)]">
+              FR-010 &middot; OpenFDA Drug Suggestions
+            </span>
+          </div>
+          <p className="text-sm text-[var(--color-ink-soft)] mb-3">
+            Based on the diagnosis, the following drug classifications were retrieved from the OpenFDA database:
+          </p>
+          <div className="space-y-2">
+            {fdaSuggestions.map((drug, idx) => (
+              <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)]">
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-sm text-[var(--color-ink)]">
+                    {drug.brandName || drug.genericName || 'Unknown Drug'}
+                  </p>
+                  {drug.brandName && drug.genericName && (
+                    <p className="text-xs text-[var(--color-ink-soft)] mt-0.5">
+                      Generic: {drug.genericName}
+                    </p>
+                  )}
+                  {drug.route && (
+                    <p className="text-xs text-[var(--color-ink-soft)]">
+                      Route: {drug.route}
+                    </p>
+                  )}
+                  {drug.indication && (
+                    <p className="text-xs text-[var(--color-ink-soft)] mt-1 line-clamp-2">
+                      {drug.indication}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+          <button
+            onClick={() => setFdaSuggestions([])}
+            className="mt-3 text-xs text-[var(--color-ink-soft)] hover:text-[var(--color-ink)] transition"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {loading && (
         <div className="flex items-center gap-2 text-sm text-[var(--color-ink-soft)]">

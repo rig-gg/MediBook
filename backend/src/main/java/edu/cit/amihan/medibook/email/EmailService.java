@@ -3,24 +3,25 @@ package edu.cit.amihan.medibook.email;
 import edu.cit.amihan.medibook.appointment.entity.Appointment;
 import edu.cit.amihan.medibook.appointment.entity.AppointmentStatus;
 import jakarta.mail.internet.MimeMessage;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
-@ConditionalOnBean(JavaMailSender.class)
 public class EmailService {
 
-    private final JavaMailSender mailSender;
+    @Autowired(required = false)
+    private JavaMailSender mailSender;
 
-    @Async
     public void sendStatusChangeEmail(Appointment appointment, AppointmentStatus oldStatus, AppointmentStatus newStatus) {
+        if (mailSender == null) {
+            log.warn("JavaMailSender not configured — skipping email for appointment {}", appointment.getAppointmentId());
+            return;
+        }
+
         try {
             String patientEmail = appointment.getPatient().getUser().getEmail();
             String patientName = appointment.getPatient().getFullName();
