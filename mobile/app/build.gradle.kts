@@ -55,6 +55,9 @@ dependencies {
     // Coroutines (for async network calls without blocking the UI thread)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
+    // EncryptedSharedPreferences for secure token storage
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+
     // Lifecycle + ViewModel (keeps auth logic out of the Activity itself)
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.4")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")

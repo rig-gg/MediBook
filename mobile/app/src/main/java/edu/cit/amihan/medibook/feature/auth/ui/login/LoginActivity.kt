@@ -65,15 +65,16 @@ class LoginActivity : AppCompatActivity() {
                     }
 
                     TokenManager.saveSession(
-                        token = authResponse.token ?: "",
+                        accessToken = authResponse.accessToken.orEmpty(),
+                        refreshToken = authResponse.refreshToken,
                         userId = authResponse.userId,
                         fullName = authResponse.fullName ?: "Patient",
-                        role = authResponse.role ?: ""
+                        role = authResponse.role.orEmpty()
                     )
 
                     Toast.makeText(
                         this@LoginActivity,
-                        "Welcome back, ${authResponse.fullName ?: "Patient"}!",
+                        "Welcome back, ${authResponse.fullName.orEmpty().ifEmpty { "Patient" }}!",
                         Toast.LENGTH_SHORT
                     ).show()
 

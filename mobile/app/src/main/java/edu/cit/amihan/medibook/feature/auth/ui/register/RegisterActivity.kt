@@ -91,10 +91,11 @@ class RegisterActivity : AppCompatActivity() {
                     val authResponse = response.body()!!
 
                     TokenManager.saveSession(
-                        token = authResponse.token ?: "",
+                        accessToken = authResponse.accessToken.orEmpty(),
+                        refreshToken = authResponse.refreshToken,
                         userId = authResponse.userId,
                         fullName = authResponse.fullName ?: "Patient",
-                        role = authResponse.role ?: ""
+                        role = authResponse.role.orEmpty()
                     )
 
                     Toast.makeText(

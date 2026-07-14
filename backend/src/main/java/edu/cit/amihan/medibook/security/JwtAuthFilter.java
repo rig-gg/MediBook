@@ -25,6 +25,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserDetailsService userDetailsService;
+    private final TokenBlacklistService blacklistService;
 
     @Override
     protected void doFilterInternal(
@@ -44,6 +45,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         try {
             final String username = jwtUtil.extractUsername(jwt);
+            final String jti = jwtUtil.extractJti(jwt);
+
+            if (blacklistService.isBlacklisted(jti)) {
+                log.debug("Blacklisted JWT on request to {}", request.getRequestURI());
+                SecurityContextHolder.clearContext();
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            if (!jwtUtil.isAccessToken(jwt)) {
+                log.debug("Non-access token used on request to {}", request.getRequestURI());
+                SecurityContextHolder.clearContext();
+                filterChain.doFilter(request, response);
+                return;
+            }
 
             if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -57,12 +73,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
         } catch (JwtException | IllegalArgumentException ex) {
-            // Expired, malformed, unsupported, or bad-signature token.
-            // Don't throw — just proceed unauthenticated. Spring Security's
-            // authorizeHttpRequests rules decide what happens next:
-            // permitAll endpoints (like /api/auth/login) still work fine,
-            // and protected endpoints correctly fall through to a 401/403
-            // instead of a raw 500 from an uncaught exception.
             log.debug("Invalid or expired JWT on request to {}: {}", request.getRequestURI(), ex.getMessage());
             SecurityContextHolder.clearContext();
         }
