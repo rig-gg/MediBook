@@ -69,6 +69,21 @@ public class HealthRecordService {
     }
 
     @Transactional(readOnly = true)
+    public HealthRecordResponse getByAppointmentId(Long appointmentId) {
+        HealthRecord rec = recordRepo.findByAppointmentAppointmentId(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "No health record found for appointment id: " + appointmentId));
+
+        HealthRecordResponse response = HealthRecordResponse.fromEntity(rec);
+
+        // FR-010: re-query OpenFDA with the stored diagnosis so suggestions are always available
+        List<FdaDrugSuggestion> suggestions = fdaService.getSuggestions(rec.getDiagnosis());
+        response.setFdaSuggestions(suggestions);
+
+        return response;
+    }
+
+    @Transactional(readOnly = true)
     public List<HealthRecordResponse> getByPatient(Long patientId) {
         return recordRepo.findByPatientPatientId(patientId)
                 .stream()

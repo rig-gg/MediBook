@@ -33,6 +33,13 @@ public class HealthRecordController {
                 .body(service.createRecord(req, currentUser.getUserId()));
     }
 
+    // FR-010 — fetch health record for a specific appointment (includes FDA suggestions)
+    @GetMapping("/appointment/{appointmentId}")
+    @PreAuthorize("hasAnyRole('DOCTOR','STAFF','PATIENT')")
+    public HealthRecordResponse byAppointment(@PathVariable Long appointmentId) {
+        return service.getByAppointmentId(appointmentId);
+    }
+
     // FR-008
     @GetMapping("/patient/{patientId}")
     @PreAuthorize("hasAnyRole('DOCTOR','STAFF')")
