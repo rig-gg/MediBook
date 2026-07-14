@@ -1,8 +1,8 @@
 # MediBook — Full Sprint Trace
 
-**Date:** 2026-07-10
-**Branch:** `main` (16 ahead of `origin/main`)
-**Stack:** Spring Boot 3.x / Supabase PostgreSQL / React 18 + Vite + Tailwind v4 / Android Kotlin + Retrofit
+**Date:** 2026-07-15
+**Branch:** `main`
+**Stack:** Spring Boot 4.1.0 / Supabase PostgreSQL / React 18 + Vite + Tailwind v4 / Android Kotlin + Retrofit
 
 ---
 
@@ -29,6 +29,7 @@ CANCELLED   CANCELLED
 ```
 - One immutable `HealthRecord` per completed appointment (BR-004)
 - Pessimistic write lock prevents double-booking (BR-003 / BR-006)
+- Staff/admin can delete cancelled or past confirmed appointments (frees schedule slot)
 
 ---
 
@@ -46,6 +47,13 @@ CANCELLED   CANCELLED
 | `Appointment` | `appointments` | `@ManyToOne` → Patient/Schedule, unique schedule constraint |
 | `HealthRecord` | `health_records` | `@OneToOne` → Appointment, `@ManyToOne` → Doctor/Patient |
 
+### Backend — Services
+
+| Service | Purpose |
+|---|---|
+| `FdaService` | Queries OpenFDA API for drug classification suggestions based on diagnosis (FR-010) |
+| `EmailService` | Sends HTML email notifications via Mailtrap SMTP on appointment status changes (FR-011) |
+
 ### Backend — Controllers & Endpoints
 
 | Endpoint | Method | Roles | Purpose |
@@ -58,10 +66,12 @@ CANCELLED   CANCELLED
 | `/api/appointments/me` | GET | PATIENT | Own appointment history |
 | `/api/appointments/doctor/{id}` | GET | Any auth | Doctor queue (frontend-guarded) |
 | `/api/appointments/{id}/status` | PATCH | STAFF/ADMIN | Approve/cancel/complete |
+| `/api/appointments/{id}` | DELETE | STAFF/ADMIN | Delete cancelled/past appointment |
 | `/api/schedules` | POST | STAFF/ADMIN | Create availability slot |
 | `/api/schedules/{id}` | PUT | STAFF/ADMIN | Update slot |
 | `/api/schedules` | GET | Any auth | List available slots |
-| `/api/records/create` | POST | DOCTOR | Write health record |
+| `/api/records/create` | POST | DOCTOR | Write health record (returns FDA suggestions) |
+| `/api/records/appointment/{id}` | GET | DOCTOR/STAFF/PATIENT | Get record by appointment (with FDA suggestions) |
 | `/api/records/patient/{id}` | GET | DOCTOR/STAFF | Read patient records |
 | `/api/records/{id}` | PUT | DOCTOR | Update diagnosis/notes |
 | `/api/doctors` | GET | Any auth | List doctors |
@@ -82,7 +92,7 @@ CANCELLED   CANCELLED
 | `/login` | LoginPage | All |
 | `/admin/register` | AdminRegisterPage | ADMIN |
 | `/doctors` | DoctorListPage | All auth |
-| `/dashboard/appointments` | AppointmentManagementPage | STAFF |
+| `/dashboard/appointments` | AppointmentManagementPage | STAFF/ADMIN |
 | `/dashboard/schedules` | CreateSchedulePage | STAFF/ADMIN |
 | `/dashboard/patients` | ManagePatientsPage | ADMIN/STAFF/DOCTOR |
 | `/dashboard/doctors` | ManageDoctorsPage | ADMIN/STAFF |
@@ -97,69 +107,33 @@ CANCELLED   CANCELLED
 | `RegisterActivity` | Patient registration with confirm password |
 | `DoctorListActivity` | Doctor directory with specialization filter |
 | `DoctorScheduleListActivity` | Available slots + booking dialog |
-| `AppointmentHistoryActivity` | Patient's own bookings |
+| `AppointmentHistoryActivity` | Patient's own bookings + detail dialog with FDA suggestions |
 
 ---
 
-## 3. Today's Fixes (Audit-Driven)
-
-### 🔴 Critical
-| Issue | Fix |
-|---|---|
-| `@PreAuthorize` silently ignored | Added `@EnableMethodSecurity` to SecurityConfig |
-| No `@Transactional` on 6 read methods | Added `@Transactional(readOnly = true)` |
-| `GET /api/appointments` leaked all data | Controller returns own appointments for PATIENT |
-| Mobile models had no `@SerializedName` | Added to all 7 model classes |
-| `CancellationException` swallowed on all activities | Re-thrown on all 5 activities |
-
-### 🟠 High
-| Issue | Fix |
-|---|---|
-| Hardcoded API URL (`localhost:8080`) | Moved to `VITE_API_URL` env var |
-| `JSON.parse` crashes on bad localStorage | try/catch + session cleanup |
-| Race conditions in all `useEffect` hooks | `useRef` mounted guard on all 5 pages |
-| Missing Error Boundary | Created `<ErrorBoundary>`, wired in `main.jsx` |
-| No auto-login on mobile | `LoginActivity` skips to main screen if token exists |
-| No logout on mobile | Button with confirmation dialog added |
-| HTTP body logging leaks credentials | Changed to `HEADERS`, conditional on `Log.isLoggable` |
-
-### 🟡 Medium
-| Issue | Fix |
-|---|---|
-| N+1 queries on appointments | `@EntityGraph` eager-fetches patient + schedule.doctor |
-| Schedule overlap check loads all rows | Replaced with DB-level `COUNT` query |
-| Patient search loads all patients | Replaced with DB `LIKE` query |
-| `save()` called on managed entities | Removed redundant `scheduleRepository.save()` calls |
-| Creation endpoints return 200 | Changed to 201 for all 4 creation endpoints |
-| No `@Valid` on controller params | Added to all public endpoints |
-| DTOs missing validation annotations | Added `@NotBlank`, `@Email`, `@Size` |
-| No network timeouts on mobile | 30s connect/read/write timeouts |
-| No confirm password on register | Added field + validation |
-| `doctorId = -1L` sent unchecked | Early return guard |
-| `userId` not persisted in TokenManager | Added `KEY_USER_ID` + 4-arg `saveSession` |
-| `login`/`logout` not memoized | Wrapped in `useCallback` |
-| `useAuth` silently returns `null` | Now throws if used outside `AuthProvider` |
-
----
-
-## 4. Current State
+## 3. Current State
 
 ### ✅ Complete
-- All core FRs (FR-001 through FR-009) implemented
+- All core FRs (FR-001 through FR-011) implemented
 - All business rules (BR-001 through BR-005) enforced
 - Backend: all endpoints built, security configured, validation added
 - Backend: ClinicStaff CRUD with search, DB-level queries, and role-based security
+- Backend: OpenFDA drug classification suggestions on health record creation (FR-010)
+- Backend: FDA suggestions visible on appointment detail view (doctor queue + patient history)
+- Backend: SMTP email notifications via Mailtrap on appointment status changes (FR-011)
+- Backend: DELETE /api/appointments/{id} for staff/admin (guards against health record FK)
 - Web: all pages built, state management stable, ErrorBoundary in place
 - Web: unified UI with teal/red design system across all dashboard pages
 - Web: Staff management page with search and inline editing (ADMIN-only)
+- Web: Clickable appointment detail modals with health record + FDA suggestions (doctor + staff)
+- Web: Admin restricted from viewing clinical data (diagnosis, notes, FDA suggestions)
+- Web: Delete button for cancelled/past appointments
 - Mobile: all activities built, auth flow complete, network layer hardened
+- Mobile: Clickable appointment history with detail dialog showing health record + FDA suggestions
 - Both backend (Maven) and web (Vite) build clean
 
 ### ❌ Not Yet Implemented
-| FR | Description |
-|---|---|
-| **FR-010** | OpenFDA API integration — server-to-server call for medical classifications when doctor types diagnosis |
-| **FR-011** | SMTP email notifications via Mailtrap on appointment status changes |
+(none — all FRs complete)
 
 ### ⚠️ Known Issues (Unfixed)
 | Issue | Severity | Reason Skipped |
@@ -171,7 +145,7 @@ CANCELLED   CANCELLED
 
 ---
 
-## 5. Key Files Reference
+## 4. Key Files Reference
 
 ### Backend
 | File | Purpose |
@@ -179,11 +153,15 @@ CANCELLED   CANCELLED
 | `security/SecurityConfig.java` | Filter chain, role rules, `@EnableMethodSecurity` |
 | `security/JwtAuthFilter.java` | JWT extraction + validation per request |
 | `auth/AuthController.java` | Login + registration (has business logic — needs refactor) |
-| `appointment/service/AppointmentService.java` | Booking with pessimistic lock, status transitions |
-| `record/service/HealthRecordService.java` | Record creation + update (BR-004 enforced) |
+| `appointment/service/AppointmentService.java` | Booking with pessimistic lock, status transitions, delete |
+| `record/service/HealthRecordService.java` | Record creation + update + get-by-appointment (FDA suggestions) |
 | `schedule/service/DoctorScheduleService.java` | Schedule CRUD with DB-level overlap check |
 | `patient/service/PatientService.java` | Search via DB query |
 | `doctor/service/DoctorService.java` | Doctor CRUD |
+| `fda/FdaService.java` | OpenFDA API integration — drug classification suggestions (FR-010) |
+| `fda/FdaConfig.java` | WebClient bean with Jackson2JsonDecoder for OpenFDA |
+| `email/EmailService.java` | HTML email notifications via Mailtrap SMTP (FR-011) |
+| `email/EmailConfig.java` | JavaMailSender bean configuration |
 
 ### Web
 | File | Purpose |
@@ -192,27 +170,26 @@ CANCELLED   CANCELLED
 | `api/axiosInstance.js` | Axios with JWT interceptor + env URL |
 | `components/ErrorBoundary.jsx` | Render error catcher |
 | `components/ProtectedRoute.jsx` | Route guard by role |
+| `features/appointments/recordService.js` | getRecordByAppointment for detail views |
+| `features/appointments/AppointmentManagementPage.jsx` | Staff/admin: detail modal, delete, admin privacy |
+| `features/appointments/DoctorAppointmentQueuePage.jsx` | Doctor: detail modal with FDA suggestions |
 
 ### Mobile
 | File | Purpose |
 |---|---|
-| `core/network/RetrofitClient.kt` | OkHttp + Retrofit with timeouts, HEADERS logging |
+| `core/network/RetrofitClient.kt` | OkHttp + Retrofit with timeouts, HEADERS logging, recordApi |
 | `core/network/AuthInterceptor.kt` | Attaches JWT to requests |
 | `core/utils/TokenManager.kt` | SharedPreferences session (token, userId, name, role) |
+| `feature/appointment/model/HealthRecordResponse.kt` | HealthRecord + FdaDrugSuggestion models |
+| `feature/appointment/network/RecordApiService.kt` | Retrofit interface for GET /api/records/appointment/{id} |
+| `feature/appointment/ui/AppointmentHistoryActivity.kt` | Detail dialog with health record + FDA suggestions |
 
 ---
 
-## 5b. Post-Audit Fixes (completed)
+## 5. Next Steps
 
-| Bug | Root Cause | Fix |
-|---|---|---|
-| Pages stuck on "Loading..." in StrictMode | `mountedRef.current = true` ran after fetch; on remount it stayed `true` | Moved to top of all 5 effects so it resets on every mount |
-| "Dr. Dr. Jeff" — duplicate title | `doctorName` stored as `Dr. Jeff`, UI prepended `Dr. ` | Removed manual prefix from web & mobile |
-
----
-
-## 6. Next Steps
-
-1. **FR-010** — `OpenFDA service`: server-to-server HTTP call (`WebClient`/`RestTemplate`) from `HealthRecordService` when doctor saves diagnosis; return drug/condition classifications as read-only suggestions
-2. **FR-011** — `Email service`: Spring Mail + Mailtrap SMTP; send on appointment status change (`PENDING → CONFIRMED`, `CONFIRMED → CANCELLED`, etc.)
-3. **Optional cleanup** — Extract `AuthService` from `AuthController`; add `@PreAuthorize` URL rules for defense in depth
+1. ~~**FR-010** — `OpenFDA service`~~ — ✅ Complete (2026-07-13)
+2. ~~**FR-010 visibility** — Surface FDA suggestions in web + mobile~~ — ✅ Complete (2026-07-15)
+3. ~~**FR-011** — `Email service`~~ — ✅ Complete (2026-07-13)
+4. **Optional cleanup** — Extract `AuthService` from `AuthController`; add `@PreAuthorize` URL rules for defense in depth
+5. **Optional** — Schedule editing by staff (currently admin-only provisioning)

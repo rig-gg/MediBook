@@ -1,6 +1,6 @@
-# MediBook — Audit Fixes Summary (2026-07-10)
+# MediBook — Audit Fixes Summary (2026-07-15)
 
-All 16 audit items + 2 post-fix bugs resolved. Backend (Maven) and web (Vite) build clean.
+All 16 original audit items + 2 post-fix bugs + 3 FR-010/FR-011 fixes + 2 new features resolved. Backend (Maven) and web (Vite) build clean.
 
 ---
 
@@ -61,3 +61,43 @@ All 16 audit items + 2 post-fix bugs resolved. Backend (Maven) and web (Vite) bu
 |---|---|---|
 | **StrictMode remount — pages stuck on "Loading..."** | `mountedRef.current = true` moved to top of all 5 effects (was after the fetch call, so on remount it stayed `true`) | All 5 data-fetching pages |
 | **Duplicate "Dr." prefix** | `doctorName` stored as `Dr. Jeff`; UI rendered `Dr. Dr. Jeff`. Removed manual `Dr.` prefix from both web and mobile | `web/.../AppointmentManagementPage.jsx:92`, `mobile/.../AppointmentAdapter.kt` |
+
+---
+
+## FR-010/FR-011 Fixes (3)
+
+| Issue | Fix | File |
+|---|---|---|
+| **WebClient JsonNode deserialization failure** | Added `Jackson2JsonDecoder(new ObjectMapper())` to WebClient builder — `JsonNode` deserializer deprecated in SB4.1 but required for OpenFDA response parsing | `fda/FdaConfig.java` |
+| **FDA query returns empty results** | Changed search from `indication:` to `description:` (more reliable for matching diagnoses); added `spl_product_data_elements` fallback when `openfda.brand_name`/`generic_name` are null | `fda/FdaService.java` |
+| **EmailConfig SSL handshake failure** | Removed `mail.smtp.ssl.enable=true` (port 465 config); kept `mail.smtp.starttls.enable=true` for port 587 | `email/EmailConfig.java` |
+
+---
+
+## New Features (2026-07-15)
+
+### FR-010 Visibility — FDA Suggestions on Appointment Detail View
+
+| Change | File(s) |
+|---|---|
+| Backend: `GET /api/records/appointment/{id}` endpoint returns health record + re-queried FDA suggestions | `HealthRecordService.java`, `HealthRecordController.java` |
+| Backend: PATIENT role added to records/appointment GET security rule | `SecurityConfig.java` |
+| Web: `getRecordByAppointment()` in recordService | `recordService.js` |
+| Web: Doctor queue — clickable appointment rows → detail modal with health record + FDA suggestions | `DoctorAppointmentQueuePage.jsx` |
+| Web: Staff/admin — clickable appointment rows → detail modal with health record + FDA suggestions | `AppointmentManagementPage.jsx` |
+| Web: Admin restricted from viewing clinical data (diagnosis, notes, FDA suggestions) | `AppointmentManagementPage.jsx` |
+| Mobile: `HealthRecordResponse` + `FdaDrugSuggestion` models | `HealthRecordResponse.kt` |
+| Mobile: `RecordApiService` Retrofit interface | `RecordApiService.kt` |
+| Mobile: `recordApi` added to RetrofitClient | `RetrofitClient.kt` |
+| Mobile: Detail dialog layout + FDA suggestion item layout | `dialog_appointment_detail.xml`, `item_fda_suggestion.xml` |
+| Mobile: Clickable appointment history → detail dialog with health record + FDA suggestions | `AppointmentAdapter.kt`, `AppointmentHistoryActivity.kt` |
+
+### Delete Stale Appointments
+
+| Change | File(s) |
+|---|---|
+| Backend: `AppointmentService.deleteAppointment()` — guards against health record FK, frees schedule slot | `AppointmentService.java` |
+| Backend: `DELETE /api/appointments/{id}` endpoint (staff/admin only) | `AppointmentController.java` |
+| Backend: DELETE security rule added | `SecurityConfig.java` |
+| Web: `deleteAppointment()` in appointmentService | `appointmentService.js` |
+| Web: Delete button for cancelled/past confirmed appointments (list + detail modal) | `AppointmentManagementPage.jsx` |

@@ -1,30 +1,34 @@
-# MediBook — Commit History Summary (2026-07-10)
+# MediBook — Commit History Summary (2026-07-15)
 
-All commits on `main` branch. Working tree clean, 16 commits ahead of `origin/main`.
+All commits on `main` branch.
 
 ---
 
-## Latest 14 Commits (This Session)
+## Latest 8 Commits (FR-010 Visibility + Delete Appointments — 2026-07-15)
 
 | # | Hash | Message | Files |
-|---|---|---|---|---|
-| 12 | `e949f80` | fix(web): move `mountedRef.current = true` to top of every effect (StrictMode remount fix) | All 5 data-fetching pages |
-| 13 | `878c2d1` | fix: remove duplicate Dr. prefix — doctorName already includes title | AppointmentManagementPage.jsx, AppointmentAdapter.kt |
-| 14 | `859ba8f` | feat(web): unify UI with teal/red design system across all dashboard pages | 9 files — DashboardLayout, all feature pages, index.html |
-| 15 | `e9b24d1` | feat(backend): add ClinicStaff CRUD with search, update, and security rules | 6 files — DTOs, Service, Controller, Repository, SecurityConfig |
-| 16 | `3dba240` | feat(web): add Staff management page with search and inline editing | ManageStaffPage.jsx, staffService.js, DashboardLayout, AppRoutes |
-| --- | --- | --- | --- |
-| 1 | `da52fa5` | fix(backend): add `@EnableMethodSecurity` | SecurityConfig.java |
-| 2 | `64d6b14` | fix(backend): add `@Transactional(readOnly=true)` on 6 read methods | AppointmentService, DoctorScheduleService, HealthRecordService |
-| 3 | `8468357` | fix(backend): scope GET /api/appointments by role, return 201 for creations | AppointmentController, DoctorScheduleController |
-| 4 | `c9e14cd` | feat(backend): add bean validation to DTOs, return 201 for register | LoginRequest, RegisterRequest, HealthRecordRequest, AuthController |
-| 5 | `70838a8` | perf(backend): `@EntityGraph` on appointments, DB-level overlap+search | AppointmentRepository, DoctorScheduleRepository, PatientRepository |
-| 6 | `94eeb96` | feat(backend): patient mgmt, doctor update, clinic staff, record endpoints | 10 files — controllers, services, entities, repos |
-| 7 | `cb85bdd` | fix(web): env URL, JSON.parse guard, ErrorBoundary, memoized auth | axiosInstance, AuthContext, ErrorBoundary, main.jsx |
-| 8 | `86d1619` | feat(web): doctor queue, patient mgmt, schedule pages + stale state fix | 13 files — pages, services, routes, layout |
-| 9 | `dce136e` | fix(mobile): add `@SerializedName` to all 7 model classes | All model `.kt` files across auth/appointment/doctor/schedule |
-| 10 | `bbc05a5` | fix(mobile): rethrow CancellationException on all 5 activities, guard doctorId | All 5 activity `.kt` files |
-| 11 | `44f0148` | feat(mobile): auto-login, logout, confirm password, HEADERS logging, 30s timeouts | TokenManager, RetrofitClient, both layouts |
+|---|---|---|---|
+| 1 | `2d85f50` | feat(backend): add GET /api/records/appointment/{id} endpoint with FDA suggestions | HealthRecordService, HealthRecordController, SecurityConfig |
+| 2 | `10917c1` | feat(web): add getRecordByAppointment and clickable detail modal on doctor queue | recordService.js, DoctorAppointmentQueuePage.jsx |
+| 3 | `2787c4d` | feat(web): add appointment detail modal with FDA suggestions on staff/admin page | AppointmentManagementPage.jsx |
+| 4 | `65a955e` | feat(mobile): add HealthRecord model, RecordApiService, and RetrofitClient integration | HealthRecordResponse.kt, RecordApiService.kt, RetrofitClient.kt |
+| 5 | `71591e5` | feat(mobile): add appointment detail dialog and FDA suggestion item layouts | dialog_appointment_detail.xml, item_fda_suggestion.xml |
+| 6 | `9b5dbd1` | feat(mobile): add clickable appointment history with detail dialog and FDA display | AppointmentAdapter.kt, AppointmentHistoryActivity.kt |
+| 7 | `f3f1e15` | feat(backend): add DELETE /api/appointments/{id} for staff/admin | AppointmentService, AppointmentController, SecurityConfig |
+| 8 | `7623b77` | feat(web): add delete button for cancelled/past appointments | appointmentService.js, AppointmentManagementPage.jsx |
+
+---
+
+## Previous Commits (FR-010/FR-011 Session — 2026-07-13)
+
+| # | Hash | Message | Files |
+|---|---|---|---|
+| 1 | `c898fb1` | Send email notification on appointment status change | EmailService, AppointmentService |
+| 2 | `a834dfc` | Add async email service for appointment status notifications | EmailService |
+| 3 | `aa4c0a5` | Add JavaMailSender configuration for FR-011 | EmailConfig |
+| 4 | `d2e98ac` | Query OpenFDA for drug suggestions on record creation | FdaService |
+| 5 | `ec10752` | Add fdaSuggestions field to health record response | HealthRecordResponse |
+| 6-16 | (earlier) | Backend fixes, web/mobile hardening, audit fixes | Various |
 
 ---
 

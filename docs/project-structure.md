@@ -1,6 +1,6 @@
 # MediBook - Project Structure
 
-> Generated on: 2026-07-10
+> Generated on: 2026-07-15
 
 ## Overview
 
@@ -137,18 +137,27 @@ backend/
     │       │   └── service/
     │       │       └── HealthRecordService.java
     │       │
-│       ├── clinicstaff/
-│       │   ├── controller/
-│       │   │   └── ClinicStaffController.java
-│       │   ├── dto/
-│       │   │   ├── ClinicStaffRequest.java
-│       │   │   └── ClinicStaffResponse.java
-│       │   ├── entity/
-│       │   │   └── ClinicStaff.java
-│       │   ├── repository/
-│       │   │   └── ClinicStaffRepository.java
-│       │   └── service/
-│       │       └── ClinicStaffService.java
+    │       ├── fda/
+    │       │   ├── FdaConfig.java
+    │       │   ├── FdaDrugSuggestion.java
+    │       │   └── FdaService.java
+    │       │
+    │       ├── email/
+    │       │   ├── EmailConfig.java
+    │       │   └── EmailService.java
+    │       │
+    │       ├── clinicstaff/
+    │       │   ├── controller/
+    │       │   │   └── ClinicStaffController.java
+    │       │   ├── dto/
+    │       │   │   ├── ClinicStaffRequest.java
+    │       │   │   └── ClinicStaffResponse.java
+    │       │   ├── entity/
+    │       │   │   └── ClinicStaff.java
+    │       │   ├── repository/
+    │       │   │   └── ClinicStaffRepository.java
+    │       │   └── service/
+    │       │       └── ClinicStaffService.java
     │       │
     │       └── common/
     │           └── exception/
@@ -169,9 +178,11 @@ backend/
 | `security` | JWT filter, security config, token utilities |
 | `doctor` | Doctor CRUD & management |
 | `patient` | Patient CRUD & management |
-| `appointment` | Appointment booking, status management |
+| `appointment` | Appointment booking, status management, delete |
 | `schedule` | Doctor schedule/availability management |
-| `record` | Health record CRUD |
+| `record` | Health record CRUD + get-by-appointment with FDA suggestions |
+| `fda` | OpenFDA drug classification suggestions (FR-010) |
+| `email` | SMTP email notifications via Mailtrap (FR-011) |
 | `clinicstaff` | Clinic staff CRUD & management |
 | `common` | Shared exceptions, global error handling |
 
@@ -267,7 +278,7 @@ web/
 |---------|-------|-------------|
 | `doctors` | service + 2 pages | Doctor listing & management |
 | `patients` | service + 1 page | Patient management |
-| `appointments` | 2 services + 2 pages | Appointment management & doctor queue |
+| `appointments` | 2 services + 2 pages | Appointment management, doctor queue, detail modals, delete |
 | `schedules` | service + 1 page | Doctor schedule creation |
 | `staff` | service + 1 page | Staff listing & management |
 | `records` | service + 1 page | Health records viewing |
@@ -340,9 +351,11 @@ mobile/
         │   │       └── appointment/
         │   │           ├── model/
         │   │           │   ├── AppointmentRequest.kt
-        │   │           │   └── AppointmentResponse.kt
+        │   │           │   ├── AppointmentResponse.kt
+        │   │           │   └── HealthRecordResponse.kt
         │   │           ├── network/
-        │   │           │   └── AppointmentApiService.kt
+        │   │           │   ├── AppointmentApiService.kt
+        │   │           │   └── RecordApiService.kt
         │   │           └── ui/
         │   │               ├── AppointmentHistoryActivity.kt
         │   │               └── AppointmentAdapter.kt
@@ -354,9 +367,11 @@ mobile/
         │       │   ├── activity_doctor_list.xml
         │       │   ├── activity_doctor_schedule_list.xml
         │       │   ├── activity_appointment_history.xml
+        │       │   ├── dialog_appointment_detail.xml
         │       │   ├── item_doctor.xml
         │       │   ├── item_schedule.xml
-        │       │   └── item_appointment.xml
+        │       │   ├── item_appointment.xml
+        │       │   └── item_fda_suggestion.xml
         │       ├── drawable/
         │       │   ├── ic_email.xml
         │       │   ├── ic_launcher_background.xml
@@ -392,13 +407,13 @@ mobile/
 | `auth` | LoginRequest, RegisterRequest, AuthResponse | AuthApiService | LoginActivity, RegisterActivity |
 | `doctor` | Doctor | DoctorApiService | DoctorListActivity, DoctorAdapter |
 | `schedule` | DoctorSchedule | ScheduleApiService | DoctorScheduleListActivity, ScheduleAdapter |
-| `appointment` | AppointmentRequest, AppointmentResponse | AppointmentApiService | AppointmentHistoryActivity, AppointmentAdapter |
+| `appointment` | AppointmentRequest, AppointmentResponse, HealthRecordResponse, FdaDrugSuggestion | AppointmentApiService, RecordApiService | AppointmentHistoryActivity, AppointmentAdapter, detail dialog |
 
 ### Mobile Core
 
 | Module | Description |
 |--------|-------------|
-| `RetrofitClient` | HTTP client singleton |
+| `RetrofitClient` | HTTP client singleton (authApi, doctorApi, scheduleApi, appointmentApi, recordApi) |
 | `AuthInterceptor` | Attaches JWT token to requests |
 | `TokenManager` | Local token storage |
 
@@ -408,7 +423,7 @@ mobile/
 
 | Layer | Technology |
 |-------|------------|
-| **Backend** | Java, Spring Boot, Spring Security, JWT, Maven |
+| **Backend** | Java, Spring Boot, Spring Security, JWT, WebClient, JavaMailSender, Maven |
 | **Web** | React, Vite, React Router, Axios |
 | **Mobile** | Kotlin, Android, Retrofit, Gradle (KTS) |
 | **Base package** | `edu.cit.amihan.medibook` |
@@ -422,7 +437,7 @@ mobile/
 | `AuthController` | Login / Register |
 | `DoctorController` | Doctor CRUD |
 | `PatientController` | Patient CRUD |
-| `AppointmentController` | Appointment booking & management |
+| `AppointmentController` | Appointment booking, management, delete |
 | `DoctorScheduleController` | Doctor schedule/availability |
-| `HealthRecordController` | Patient health records |
+| `HealthRecordController` | Patient health records (returns FDA drug suggestions on create and on get-by-appointment) |
 | `ClinicStaffController` | Staff CRUD & search |
