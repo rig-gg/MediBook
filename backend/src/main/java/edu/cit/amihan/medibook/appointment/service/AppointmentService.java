@@ -9,6 +9,7 @@ import edu.cit.amihan.medibook.common.exception.ResourceNotFoundException;
 import edu.cit.amihan.medibook.email.EmailService;
 import edu.cit.amihan.medibook.patient.entity.Patient;
 import edu.cit.amihan.medibook.patient.repository.PatientRepository;
+import edu.cit.amihan.medibook.record.repository.HealthRecordRepository;
 import edu.cit.amihan.medibook.schedule.entity.DoctorSchedule;
 import edu.cit.amihan.medibook.schedule.repository.DoctorScheduleRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +26,7 @@ public class AppointmentService {
     private final DoctorScheduleRepository scheduleRepository;
     private final PatientRepository patientRepository;
     private final EmailService emailService;
+    private final HealthRecordRepository healthRecordRepository;
 
     @Transactional
     public AppointmentResponse bookAppointment(Long userId, AppointmentRequest request) {
@@ -125,5 +127,22 @@ public class AppointmentService {
         return appointments.stream()
                 .map(AppointmentResponse::fromEntity)
                 .toList();
+    }
+
+    @Transactional
+    public void deleteAppointment(Long appointmentId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Appointment not found with id: " + appointmentId));
+
+        if (healthRecordRepository.existsByAppointmentAppointmentId(appointmentId)) {
+            throw new IllegalStateException(
+                    "Cannot delete appointment with an existing health record.");
+        }
+
+        DoctorSchedule schedule = appointment.getSchedule();
+        schedule.setIsAvailable(true);
+
+        appointmentRepository.delete(appointment);
     }
 }

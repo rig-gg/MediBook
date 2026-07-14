@@ -77,4 +77,11 @@ public class AppointmentController {
             @RequestParam AppointmentStatus status) {
         return ResponseEntity.ok(appointmentService.updateStatus(id, status));
     }
+
+    // STAFF/ADMIN — delete a past or stale appointment
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAppointment(@PathVariable Long id) {
+        appointmentService.deleteAppointment(id);
+        return ResponseEntity.noContent().build();
+    }
 }
