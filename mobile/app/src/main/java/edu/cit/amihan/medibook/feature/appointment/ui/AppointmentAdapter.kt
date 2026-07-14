@@ -9,7 +9,8 @@ import edu.cit.amihan.medibook.databinding.ItemAppointmentBinding
 import edu.cit.amihan.medibook.feature.appointment.model.AppointmentResponse
 
 class AppointmentAdapter(
-    private var appointments: List<AppointmentResponse>
+    private var appointments: List<AppointmentResponse>,
+    private val onItemClick: (AppointmentResponse) -> Unit = {}
 ) : RecyclerView.Adapter<AppointmentAdapter.AppointmentViewHolder>() {
 
     inner class AppointmentViewHolder(val binding: ItemAppointmentBinding) :
@@ -48,6 +49,8 @@ class AppointmentAdapter(
                 holder.binding.tvStatus.setTextColor(ContextCompat.getColor(ctx, R.color.status_cancelled_text))
             }
         }
+
+        holder.itemView.setOnClickListener { onItemClick(appointment) }
     }
 
     override fun getItemCount(): Int = appointments.size
