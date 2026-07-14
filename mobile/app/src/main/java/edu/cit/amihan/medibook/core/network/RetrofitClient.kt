@@ -2,6 +2,7 @@ package edu.cit.amihan.medibook.core.network
 
 import edu.cit.amihan.medibook.feature.auth.network.AuthApiService
 import edu.cit.amihan.medibook.feature.appointment.network.AppointmentApiService
+import edu.cit.amihan.medibook.feature.appointment.network.RecordApiService
 import edu.cit.amihan.medibook.feature.doctor.network.DoctorApiService
 import edu.cit.amihan.medibook.feature.schedule.network.ScheduleApiService
 import okhttp3.OkHttpClient
@@ -37,4 +38,5 @@ object RetrofitClient {
     val doctorApi: DoctorApiService = retrofit.create(DoctorApiService::class.java)
     val scheduleApi: ScheduleApiService = retrofit.create(ScheduleApiService::class.java)
     val appointmentApi: AppointmentApiService = retrofit.create(AppointmentApiService::class.java)
+    val recordApi: RecordApiService = retrofit.create(RecordApiService::class.java)
 }
