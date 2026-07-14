@@ -19,6 +19,14 @@ All commits on `main` branch.
 
 ---
 
+## Latest Commit (JWT Security Hardening — 2026-07-15)
+
+| # | Hash | Message | Files |
+|---|---|---|---|
+| 1 | `9fc8593` | fix(security): harden JWT — 256-bit secret, 30min access tokens, refresh tokens, token blacklist, rate limiting, EncryptedSharedPreferences | JwtUtil, JwtAuthFilter, JwtProperties, TokenBlacklistService, RateLimitService, AuthController, AuthResponse, RefreshTokenRequest, LogoutRequest, application.properties, .env, .env.example, axiosInstance.js, AuthContext.jsx, authService.js, AuthInterceptor.kt, TokenManager.kt, AuthResponse.kt, AuthApiService.kt, LoginActivity.kt, RegisterActivity.kt, build.gradle.kts |
+
+---
+
 ## Previous Commits (FR-010/FR-011 Session — 2026-07-13)
 
 | # | Hash | Message | Files |

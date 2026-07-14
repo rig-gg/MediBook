@@ -101,3 +101,22 @@ All 16 original audit items + 2 post-fix bugs + 3 FR-010/FR-011 fixes + 2 new fe
 | Backend: DELETE security rule added | `SecurityConfig.java` |
 | Web: `deleteAppointment()` in appointmentService | `appointmentService.js` |
 | Web: Delete button for cancelled/past confirmed appointments (list + detail modal) | `AppointmentManagementPage.jsx` |
+
+---
+
+## JWT Security Hardening (2026-07-15)
+
+| Change | File(s) |
+|---|---|
+| Rotated JWT secret to 512-bit random key; fail-fast on startup if < 43 chars | `application.properties`, `.env`, `.env.example`, `JwtProperties.java` |
+| Access token lifetime: 24h → 30min; refresh token: 7 days with rotation | `JwtUtil.java`, `application.properties` |
+| Server-side token blacklist (JTI-based) for logout/revocation | `TokenBlacklistService.java` |
+| Rate limiting: 5 attempts/min per IP on login + patient registration | `RateLimitService.java`, `AuthController.java` |
+| POST /api/auth/refresh — validates refresh token, returns new access + refresh token | `AuthController.java`, `RefreshTokenRequest.java` |
+| POST /api/auth/logout — blacklists access + refresh token JTIs | `AuthController.java`, `LogoutRequest.java` |
+| JwtAuthFilter checks blacklist + rejects non-access tokens | `JwtAuthFilter.java` |
+| AuthResponse: `token` → `accessToken` + `refreshToken` | `AuthResponse.java` |
+| Web: axios interceptor auto-refreshes on 401 before redirect | `axiosInstance.js`, `AuthContext.jsx`, `authService.js` |
+| Mobile: AuthInterceptor attempts token refresh on 401 | `AuthInterceptor.kt`, `AuthApiService.kt`, `AuthResponse.kt` |
+| Mobile: TokenManager migrated to EncryptedSharedPreferences | `TokenManager.kt`, `build.gradle.kts` |
+| Mobile: LoginActivity + RegisterActivity updated for new auth response | `LoginActivity.kt`, `RegisterActivity.kt` |
