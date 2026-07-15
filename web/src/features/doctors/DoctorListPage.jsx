@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { getDoctors } from './doctorService';
-
-const inputClasses =
-  'w-full rounded-lg border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-sm text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-panel-accent)]/40 focus:border-[var(--color-panel-accent)] transition';
+import { inputClasses } from '../../styles/formClasses';
 
 const DoctorListPage = () => {
   const [doctors, setDoctors] = useState([]);
