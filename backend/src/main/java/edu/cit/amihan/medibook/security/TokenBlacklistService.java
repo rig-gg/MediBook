@@ -1,37 +1,38 @@
 package edu.cit.amihan.medibook.security;
 
+import edu.cit.amihan.medibook.security.entity.BlacklistedToken;
+import edu.cit.amihan.medibook.security.repository.BlacklistedTokenRepository;
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TokenBlacklistService {
 
-    private final Set<String> blacklistedTokens = ConcurrentHashMap.newKeySet();
-    private final ScheduledExecutorService cleaner = Executors.newSingleThreadScheduledExecutor();
+    private final BlacklistedTokenRepository blacklistRepository;
 
-    public TokenBlacklistService() {
-        cleaner.scheduleAtFixedRate(this::cleanup, 1, 1, TimeUnit.HOURS);
-    }
-
-    public void blacklist(String jti) {
-        if (jti != null) {
-            blacklistedTokens.add(jti);
+    public void blacklist(String jti, LocalDateTime expiresAt) {
+        if (jti != null && !blacklistRepository.existsByJti(jti)) {
+            blacklistRepository.save(new BlacklistedToken(jti, expiresAt));
             log.debug("Token blacklisted: {}", jti);
         }
     }
 
     public boolean isBlacklisted(String jti) {
-        return jti != null && blacklistedTokens.contains(jti);
+        return jti != null && blacklistRepository.existsByJti(jti);
     }
 
-    private void cleanup() {
-        log.debug("Blacklist cleanup — {} tokens tracked", blacklistedTokens.size());
+    @Scheduled(cron = "0 0 * * * *")
+    @Transactional
+    public void cleanup() {
+        blacklistRepository.deleteByExpiresAtBefore(LocalDateTime.now());
+        log.debug("Blacklist cleanup completed");
     }
 }
