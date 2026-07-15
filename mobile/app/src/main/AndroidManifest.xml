@@ -35,6 +35,7 @@
         <activity android:name=".feature.doctor.ui.DoctorListActivity" android:exported="false" />
         <activity android:name=".feature.schedule.ui.DoctorScheduleListActivity" android:exported="false" />
         <activity android:name=".feature.appointment.ui.AppointmentHistoryActivity" android:exported="false" />
+        <activity android:name=".feature.patient.ui.ProfileEditActivity" android:exported="false" />
 
     </application>
 

@@ -4,6 +4,7 @@ import edu.cit.amihan.medibook.feature.auth.network.AuthApiService
 import edu.cit.amihan.medibook.feature.appointment.network.AppointmentApiService
 import edu.cit.amihan.medibook.feature.appointment.network.RecordApiService
 import edu.cit.amihan.medibook.feature.doctor.network.DoctorApiService
+import edu.cit.amihan.medibook.feature.patient.network.PatientApiService
 import edu.cit.amihan.medibook.feature.schedule.network.ScheduleApiService
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -39,4 +40,5 @@ object RetrofitClient {
     val scheduleApi: ScheduleApiService = retrofit.create(ScheduleApiService::class.java)
     val appointmentApi: AppointmentApiService = retrofit.create(AppointmentApiService::class.java)
     val recordApi: RecordApiService = retrofit.create(RecordApiService::class.java)
+    val patientApi: PatientApiService = retrofit.create(PatientApiService::class.java)
 }

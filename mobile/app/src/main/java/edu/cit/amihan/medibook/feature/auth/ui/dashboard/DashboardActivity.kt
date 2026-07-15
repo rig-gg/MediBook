@@ -11,6 +11,7 @@ import edu.cit.amihan.medibook.databinding.ActivityDashboardBinding
 import edu.cit.amihan.medibook.feature.appointment.ui.AppointmentHistoryActivity
 import edu.cit.amihan.medibook.feature.auth.ui.login.LoginActivity
 import edu.cit.amihan.medibook.feature.doctor.ui.DoctorListActivity
+import edu.cit.amihan.medibook.feature.patient.ui.ProfileEditActivity
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 
@@ -34,6 +35,10 @@ class DashboardActivity : AppCompatActivity() {
 
         binding.cardMyAppointments.setOnClickListener {
             startActivity(Intent(this, AppointmentHistoryActivity::class.java))
+        }
+
+        binding.cardMyProfile.setOnClickListener {
+            startActivity(Intent(this, ProfileEditActivity::class.java))
         }
 
         binding.btnLogout.setOnClickListener {
