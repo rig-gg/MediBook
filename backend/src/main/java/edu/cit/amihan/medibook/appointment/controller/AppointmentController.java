@@ -70,6 +70,14 @@ public class AppointmentController {
         return ResponseEntity.ok(appointmentService.getDoctorAppointments(doctorId, status));
     }
 
+    // PATIENT — cancel own PENDING or CONFIRMED appointment
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<AppointmentResponse> cancelMyAppointment(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long id) {
+        return ResponseEntity.ok(appointmentService.cancelMyAppointment(currentUser.getUserId(), id));
+    }
+
     // STAFF — approve, cancel, or modify status (FR-004)
     @PatchMapping("/{id}/status")
     public ResponseEntity<AppointmentResponse> updateStatus(

@@ -145,4 +145,21 @@ public class AppointmentService {
 
         appointmentRepository.delete(appointment);
     }
+
+    @Transactional
+    public AppointmentResponse cancelMyAppointment(Long userId, Long appointmentId) {
+        Patient patient = patientRepository.findByUserUserId(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found for this account."));
+
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Appointment not found with id: " + appointmentId));
+
+        if (!appointment.getPatient().getPatientId().equals(patient.getPatientId())) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    org.springframework.http.HttpStatus.FORBIDDEN, "You can only cancel your own appointments.");
+        }
+
+        return updateStatus(appointmentId, AppointmentStatus.CANCELLED);
+    }
 }
