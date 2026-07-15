@@ -80,17 +80,28 @@ public class AuthController {
     }
 
     @PostMapping("/api/auth/refresh")
-    public ResponseEntity<?> refresh(@Valid @RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<?> refresh(@Valid @RequestBody RefreshTokenRequest request,
+                                    HttpServletRequest httpRequest) {
+        String rateLimitKey = "refresh:" + getClientIp(httpRequest);
+        if (rateLimitService.isBlocked(rateLimitKey)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body("Too many refresh attempts. Please try again in 1 minute.");
+        }
+
         String refreshToken = request.getRefreshToken();
 
         if (!jwtUtil.isTokenValid(refreshToken) || !jwtUtil.isRefreshToken(refreshToken)) {
+            rateLimitService.recordAttempt(rateLimitKey);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid refresh token.");
         }
 
         String jti = jwtUtil.extractJti(refreshToken);
         if (blacklistService.isBlacklisted(jti)) {
+            rateLimitService.recordAttempt(rateLimitKey);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Refresh token has been revoked.");
         }
+
+        rateLimitService.reset(rateLimitKey);
 
         String username = jwtUtil.extractUsername(refreshToken);
         UserDetails userDetails = userDetailsService.loadUserByUsername(username);
@@ -98,7 +109,8 @@ public class AuthController {
         String newAccessToken = jwtUtil.generateAccessToken(userDetails);
         String newRefreshToken = jwtUtil.generateRefreshToken(userDetails);
 
-        blacklistService.blacklist(jti);
+        blacklistService.blacklist(jti, jwtUtil.extractExpiration(refreshToken).toInstant()
+                .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
 
         return ResponseEntity.ok(new AuthResponse(
                 newAccessToken, newRefreshToken,
@@ -111,14 +123,16 @@ public class AuthController {
                                     @RequestHeader(value = "Authorization", required = false) String authHeader) {
         if (request != null && request.getRefreshToken() != null) {
             String jti = jwtUtil.extractJti(request.getRefreshToken());
-            blacklistService.blacklist(jti);
+            blacklistService.blacklist(jti, jwtUtil.extractExpiration(request.getRefreshToken()).toInstant()
+                    .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
         }
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String accessToken = authHeader.substring(7);
             try {
                 String jti = jwtUtil.extractJti(accessToken);
-                blacklistService.blacklist(jti);
+                blacklistService.blacklist(jti, jwtUtil.extractExpiration(accessToken).toInstant()
+                        .atZone(java.time.ZoneId.systemDefault()).toLocalDateTime());
             } catch (Exception ignored) {
             }
         }
@@ -221,10 +235,6 @@ public class AuthController {
     }
 
     private String getClientIp(HttpServletRequest request) {
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) {
-            return xff.split(",")[0].trim();
-        }
         return request.getRemoteAddr();
     }
 }
