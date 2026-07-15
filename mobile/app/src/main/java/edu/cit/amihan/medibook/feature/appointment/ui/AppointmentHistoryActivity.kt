@@ -139,6 +139,19 @@ class AppointmentHistoryActivity : AppCompatActivity() {
             .create()
         dialog.window?.setBackgroundDrawableResource(R.color.medibook_surface)
 
+        val tvCancel = view.findViewById<TextView>(R.id.tvCancel)
+        if (appt.status == "PENDING" || appt.status == "CONFIRMED") {
+            tvCancel.visibility = View.VISIBLE
+            tvCancel.setOnClickListener {
+                AlertDialog.Builder(this)
+                    .setTitle("Cancel Appointment")
+                    .setMessage("Are you sure you want to cancel this appointment?")
+                    .setPositiveButton("Yes") { _, _ -> cancelAppointment(appt.appointmentId, dialog) }
+                    .setNegativeButton("No", null)
+                    .show()
+            }
+        }
+
         view.findViewById<TextView>(R.id.tvDetailClose).setOnClickListener { dialog.dismiss() }
 
         dialog.show()
@@ -206,5 +219,30 @@ class AppointmentHistoryActivity : AppCompatActivity() {
     private fun showError(message: String) {
         binding.tvError.text = message
         binding.tvError.visibility = View.VISIBLE
+    }
+
+    private fun cancelAppointment(appointmentId: Long, dialog: AlertDialog) {
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.appointmentApi.cancelAppointment(appointmentId)
+                dialog.dismiss()
+                if (response.isSuccessful) {
+                    fetchAppointments()
+                } else if (response.code() == 401) {
+                    TokenManager.clear()
+                    startActivity(Intent(this@AppointmentHistoryActivity,
+                        edu.cit.amihan.medibook.feature.auth.ui.login.LoginActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    })
+                } else {
+                    showError("Failed to cancel appointment (code ${response.code()}).")
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                dialog.dismiss()
+                showError("Network error: ${e.message}")
+            }
+        }
     }
 }

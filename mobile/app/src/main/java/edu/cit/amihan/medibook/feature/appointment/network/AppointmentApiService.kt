@@ -14,4 +14,7 @@ interface AppointmentApiService {
 
     @GET("api/appointments/me")
     suspend fun getMyAppointments(): Response<List<AppointmentResponse>>
+
+    @PATCH("api/appointments/{id}/cancel")
+    suspend fun cancelAppointment(@Path("id") appointmentId: Long): Response<AppointmentResponse>
 }
