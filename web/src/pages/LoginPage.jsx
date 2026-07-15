@@ -27,6 +27,9 @@ const LoginPage = () => {
       const loggedInUser = await login(username, password);
 
       if (loggedInUser.role === 'PATIENT') {
+        localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
+        localStorage.removeItem('user');
         setError('PATIENT accounts can only access the mobile app. Please use the Android application.');
         return;
       }
