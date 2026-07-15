@@ -27,7 +27,7 @@ class AuthInterceptor : Interceptor {
 
         val response = chain.proceed(newRequest)
 
-        if (response.code == 401 && !originalRequest.header("X-Refresh-Retry")?.toBoolean()!!) {
+        if (response.code == 401 && originalRequest.header("X-Refresh-Retry") != "true") {
             val refreshToken = TokenManager.getRefreshToken()
             if (!refreshToken.isNullOrEmpty()) {
                 response.close()
