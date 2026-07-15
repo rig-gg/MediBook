@@ -54,7 +54,7 @@ const DashboardHome = () => {
       }
     };
     load();
-  }, [user]);
+  }, [user?.userId, user?.role]);
 
   const roleLabel = {
     ADMIN: 'System Administrator',
