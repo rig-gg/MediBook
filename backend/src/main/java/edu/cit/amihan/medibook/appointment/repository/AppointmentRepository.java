@@ -20,4 +20,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
 
     @EntityGraph(attributePaths = {"patient", "schedule.doctor"})
     List<Appointment> findByScheduleDoctorDoctorIdOrderByCreatedAtDesc(Long doctorId);
+
+    boolean existsByScheduleDoctorDoctorIdAndPatientPatientId(Long doctorId, Long patientId);
 }

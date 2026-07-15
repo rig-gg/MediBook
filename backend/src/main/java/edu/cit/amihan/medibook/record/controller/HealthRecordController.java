@@ -34,17 +34,22 @@ public class HealthRecordController {
     }
 
     // FR-010 — fetch health record for a specific appointment (includes FDA suggestions)
+    // PATIENT can only read their own; DOCTOR/STAFF can read any
     @GetMapping("/appointment/{appointmentId}")
     @PreAuthorize("hasAnyRole('DOCTOR','STAFF','PATIENT')")
-    public HealthRecordResponse byAppointment(@PathVariable Long appointmentId) {
-        return service.getByAppointmentId(appointmentId);
+    public HealthRecordResponse byAppointment(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long appointmentId) {
+        return service.getByAppointmentId(appointmentId, currentUser);
     }
 
-    // FR-008
+    // FR-008 — DOCTOR can only see records of patients they are assigned to; STAFF can see all
     @GetMapping("/patient/{patientId}")
     @PreAuthorize("hasAnyRole('DOCTOR','STAFF')")
-    public List<HealthRecordResponse> byPatient(@PathVariable Long patientId) {
-        return service.getByPatient(patientId);
+    public List<HealthRecordResponse> byPatient(
+            @AuthenticationPrincipal User currentUser,
+            @PathVariable Long patientId) {
+        return service.getByPatient(patientId, currentUser);
     }
 
     // Doctors can update diagnosis and consultation notes

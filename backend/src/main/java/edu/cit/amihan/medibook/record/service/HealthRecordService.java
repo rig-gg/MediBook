@@ -3,14 +3,21 @@ package edu.cit.amihan.medibook.record.service;
 import edu.cit.amihan.medibook.appointment.entity.Appointment;
 import edu.cit.amihan.medibook.appointment.entity.AppointmentStatus;
 import edu.cit.amihan.medibook.appointment.repository.AppointmentRepository;
+import edu.cit.amihan.medibook.appointment.service.AppointmentService;
 import edu.cit.amihan.medibook.common.exception.ResourceNotFoundException;
+import edu.cit.amihan.medibook.doctor.entity.Doctor;
+import edu.cit.amihan.medibook.doctor.repository.DoctorRepository;
 import edu.cit.amihan.medibook.fda.FdaDrugSuggestion;
 import edu.cit.amihan.medibook.fda.FdaService;
+import edu.cit.amihan.medibook.patient.entity.Patient;
+import edu.cit.amihan.medibook.patient.repository.PatientRepository;
 import edu.cit.amihan.medibook.record.dto.HealthRecordRequest;
 import edu.cit.amihan.medibook.record.dto.HealthRecordResponse;
 import edu.cit.amihan.medibook.record.entity.HealthRecord;
 import edu.cit.amihan.medibook.record.repository.HealthRecordRepository;
+import edu.cit.amihan.medibook.user.entity.User;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +32,10 @@ public class HealthRecordService {
 
     private final HealthRecordRepository recordRepo;
     private final AppointmentRepository appointmentRepo;
+    @Lazy
+    private final AppointmentService appointmentService;
+    private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
     private final FdaService fdaService;
 
     @Transactional
@@ -48,8 +59,6 @@ public class HealthRecordService {
                     "A health record already exists for this appointment");
         }
 
-        appt.setStatus(AppointmentStatus.COMPLETED);
-
         HealthRecord rec = new HealthRecord();
         rec.setAppointment(appt);
         rec.setDoctor(appt.getSchedule().getDoctor());
@@ -58,6 +67,9 @@ public class HealthRecordService {
         rec.setConsultationNotes(req.getConsultationNotes());
 
         HealthRecord saved = recordRepo.save(rec);
+
+        // Delegate status transition through AppointmentService for proper state machine + email notification
+        appointmentService.updateStatus(appt.getAppointmentId(), AppointmentStatus.COMPLETED);
 
         HealthRecordResponse response = HealthRecordResponse.fromEntity(saved);
 
@@ -69,10 +81,20 @@ public class HealthRecordService {
     }
 
     @Transactional(readOnly = true)
-    public HealthRecordResponse getByAppointmentId(Long appointmentId) {
+    public HealthRecordResponse getByAppointmentId(Long appointmentId, User currentUser) {
         HealthRecord rec = recordRepo.findByAppointmentAppointmentId(appointmentId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "No health record found for appointment id: " + appointmentId));
+
+        // IDOR check: PATIENT can only read their own appointment's record
+        if ("PATIENT".equals(currentUser.getRole().name())) {
+            Patient patient = patientRepository.findByUserUserId(currentUser.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Patient profile not found."));
+            if (!rec.getPatient().getPatientId().equals(patient.getPatientId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "You do not have access to this health record.");
+            }
+        }
 
         HealthRecordResponse response = HealthRecordResponse.fromEntity(rec);
 
@@ -84,7 +106,19 @@ public class HealthRecordService {
     }
 
     @Transactional(readOnly = true)
-    public List<HealthRecordResponse> getByPatient(Long patientId) {
+    public List<HealthRecordResponse> getByPatient(Long patientId, User currentUser) {
+        // IDOR check: DOCTOR can only see records of patients they are assigned to
+        if ("DOCTOR".equals(currentUser.getRole().name())) {
+            Doctor doctor = doctorRepository.findByUserUserId(currentUser.getUserId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Doctor profile not found."));
+            boolean hasAppointment = appointmentRepo.existsByScheduleDoctorDoctorIdAndPatientPatientId(
+                    doctor.getDoctorId(), patientId);
+            if (!hasAppointment) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                        "You are not assigned to this patient.");
+            }
+        }
+
         return recordRepo.findByPatientPatientId(patientId)
                 .stream()
                 .map(HealthRecordResponse::fromEntity)
