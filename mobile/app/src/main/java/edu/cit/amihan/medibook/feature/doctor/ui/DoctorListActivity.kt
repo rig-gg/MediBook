@@ -47,6 +47,16 @@ class DoctorListActivity : AppCompatActivity() {
                 .setTitle("Logout")
                 .setMessage("Are you sure you want to logout?")
                 .setPositiveButton("Logout") { _, _ ->
+                    val token = TokenManager.getToken()
+                    val refreshToken = TokenManager.getRefreshToken()
+                    lifecycleScope.launch {
+                        try {
+                            RetrofitClient.authApi.logout(
+                                request = edu.cit.amihan.medibook.feature.auth.network.LogoutRequest(refreshToken),
+                                authHeader = if (!token.isNullOrEmpty()) "Bearer $token" else null
+                            )
+                        } catch (_: Exception) { }
+                    }
                     TokenManager.clear()
                     startActivity(Intent(this, LoginActivity::class.java).apply {
                         flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -82,7 +92,10 @@ class DoctorListActivity : AppCompatActivity() {
                     binding.tvError.visibility = android.view.View.GONE
                     setupSpecializationDropdown()
                 } else if (response.code() == 401) {
-                    showError("Session expired. Please log in again.")
+                    TokenManager.clear()
+                    startActivity(Intent(this@DoctorListActivity, LoginActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    })
                 } else {
                     showError("Failed to load doctors (code ${response.code()}).")
                 }
