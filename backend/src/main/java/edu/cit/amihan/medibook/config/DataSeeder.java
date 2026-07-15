@@ -20,11 +20,25 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        String adminPassword = System.getenv("SEED_ADMIN_PASSWORD");
+        String doctorPassword = System.getenv("SEED_DOCTOR_PASSWORD");
+        String staffPassword = System.getenv("SEED_STAFF_PASSWORD");
+
+        if (adminPassword == null || adminPassword.isBlank()) {
+            adminPassword = "ChangeMe@1234";
+        }
+        if (doctorPassword == null || doctorPassword.isBlank()) {
+            doctorPassword = "ChangeMe@1234";
+        }
+        if (staffPassword == null || staffPassword.isBlank()) {
+            staffPassword = "ChangeMe@1234";
+        }
+
         // Create admin
         if (!userRepository.existsByUsername("admin")) {
             User admin = User.builder()
                     .username("admin")
-                    .passwordHash(passwordEncoder.encode("Test@1234"))
+                    .passwordHash(passwordEncoder.encode(adminPassword))
                     .email("admin@medibook.com")
                     .fullName("System Admin")
                     .role(Role.ADMIN)
@@ -36,7 +50,7 @@ public class DataSeeder implements CommandLineRunner {
         if (!userRepository.existsByUsername("doctor1")) {
             User doctorUser = User.builder()
                     .username("doctor1")
-                    .passwordHash(passwordEncoder.encode("Test@1234"))
+                    .passwordHash(passwordEncoder.encode(doctorPassword))
                     .email("doctor1@medibook.com")
                     .fullName("Dr. Juan Dela Cruz")
                     .role(Role.DOCTOR)
@@ -56,7 +70,7 @@ public class DataSeeder implements CommandLineRunner {
         if (!userRepository.existsByUsername("staff1")) {
             User staffUser = User.builder()
                     .username("staff1")
-                    .passwordHash(passwordEncoder.encode("Test@1234"))
+                    .passwordHash(passwordEncoder.encode(staffPassword))
                     .email("staff1@medibook.com")
                     .fullName("Maria Santos")
                     .role(Role.STAFF)
