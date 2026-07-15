@@ -214,6 +214,9 @@ public class AuthController {
         User savedUser = userRepository.save(user);
 
         if (request.getRole() == Role.DOCTOR) {
+            if (request.getSpecialization() == null || request.getSpecialization().isBlank()) {
+                return ResponseEntity.badRequest().body("Specialization is required for DOCTOR accounts.");
+            }
             Doctor doctor = Doctor.builder()
                     .user(savedUser)
                     .fullName(request.getFullName())
@@ -222,6 +225,9 @@ public class AuthController {
                     .build();
             doctorRepository.save(doctor);
         } else if (request.getRole() == Role.STAFF) {
+            if (request.getPosition() == null || request.getPosition().isBlank()) {
+                return ResponseEntity.badRequest().body("Position is required for STAFF accounts.");
+            }
             ClinicStaff staff = ClinicStaff.builder()
                     .user(savedUser)
                     .fullName(request.getFullName())
