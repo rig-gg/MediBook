@@ -16,6 +16,8 @@ import ManageStaffPage from '../features/staff/ManageStaffPage';
 import { getDoctors } from '../features/doctors/doctorService';
 import { getPatients } from '../features/patients/patientService';
 import { getAllAppointments } from '../features/appointments/appointmentService';
+import { getDoctorByUserId } from '../features/doctors/doctorService';
+import { getDoctorAppointments } from '../features/appointments/doctorAppointmentService';
 
 const DashboardHome = () => {
   const { user } = useAuth();
@@ -24,23 +26,35 @@ const DashboardHome = () => {
   useEffect(() => {
     const load = async () => {
       try {
-        const [doctors, patients, appointments] = await Promise.all([
-          getDoctors(),
-          getPatients(),
-          getAllAppointments(),
-        ]);
-        setStats({
-          doctors: doctors.length,
-          patients: patients.length,
-          appointments: appointments.length,
-          pending: appointments.filter((a) => a.status === 'PENDING').length,
-        });
+        if (user?.role === 'DOCTOR') {
+          const doctor = await getDoctorByUserId(user.userId);
+          const doctorId = doctor.doctorId;
+          const appointments = await getDoctorAppointments(doctorId);
+          setStats({
+            myAppointments: appointments.length,
+            pending: appointments.filter((a) => a.status === 'PENDING').length,
+            confirmed: appointments.filter((a) => a.status === 'CONFIRMED').length,
+            completed: appointments.filter((a) => a.status === 'COMPLETED').length,
+          });
+        } else {
+          const [doctors, patients, appointments] = await Promise.all([
+            getDoctors(),
+            getPatients(),
+            getAllAppointments(),
+          ]);
+          setStats({
+            doctors: doctors.length,
+            patients: patients.length,
+            appointments: appointments.length,
+            pending: appointments.filter((a) => a.status === 'PENDING').length,
+          });
+        }
       } catch {
         /* silent */
       }
     };
     load();
-  }, []);
+  }, [user]);
 
   const roleLabel = {
     ADMIN: 'System Administrator',
@@ -59,24 +73,49 @@ const DashboardHome = () => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="stat-card animate-fade-in-up" style={{ animationDelay: '0ms' }}>
-          <p className="stat-card-label">Doctors</p>
-          <p className="stat-card-value">{stats?.doctors ?? '\u2014'}</p>
-        </div>
-        <div className="stat-card animate-fade-in-up" style={{ animationDelay: '80ms' }}>
-          <p className="stat-card-label">Patients</p>
-          <p className="stat-card-value">{stats?.patients ?? '\u2014'}</p>
-        </div>
-        <div className="stat-card animate-fade-in-up" style={{ animationDelay: '160ms' }}>
-          <p className="stat-card-label">Appointments</p>
-          <p className="stat-card-value">{stats?.appointments ?? '\u2014'}</p>
-        </div>
-        <div className="stat-card animate-fade-in-up" style={{ animationDelay: '240ms' }}>
-          <p className="stat-card-label">Pending</p>
-          <p className="stat-card-value" style={stats?.pending > 0 ? { color: 'var(--color-vital)' } : {}}>
-            {stats?.pending ?? '\u2014'}
-          </p>
-        </div>
+        {user?.role === 'DOCTOR' ? (
+          <>
+            <div className="stat-card animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+              <p className="stat-card-label">My Appointments</p>
+              <p className="stat-card-value">{stats?.myAppointments ?? '\u2014'}</p>
+            </div>
+            <div className="stat-card animate-fade-in-up" style={{ animationDelay: '80ms' }}>
+              <p className="stat-card-label">Pending</p>
+              <p className="stat-card-value" style={stats?.pending > 0 ? { color: 'var(--color-vital)' } : {}}>
+                {stats?.pending ?? '\u2014'}
+              </p>
+            </div>
+            <div className="stat-card animate-fade-in-up" style={{ animationDelay: '160ms' }}>
+              <p className="stat-card-label">Confirmed</p>
+              <p className="stat-card-value">{stats?.confirmed ?? '\u2014'}</p>
+            </div>
+            <div className="stat-card animate-fade-in-up" style={{ animationDelay: '240ms' }}>
+              <p className="stat-card-label">Completed</p>
+              <p className="stat-card-value">{stats?.completed ?? '\u2014'}</p>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="stat-card animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+              <p className="stat-card-label">Doctors</p>
+              <p className="stat-card-value">{stats?.doctors ?? '\u2014'}</p>
+            </div>
+            <div className="stat-card animate-fade-in-up" style={{ animationDelay: '80ms' }}>
+              <p className="stat-card-label">Patients</p>
+              <p className="stat-card-value">{stats?.patients ?? '\u2014'}</p>
+            </div>
+            <div className="stat-card animate-fade-in-up" style={{ animationDelay: '160ms' }}>
+              <p className="stat-card-label">Appointments</p>
+              <p className="stat-card-value">{stats?.appointments ?? '\u2014'}</p>
+            </div>
+            <div className="stat-card animate-fade-in-up" style={{ animationDelay: '240ms' }}>
+              <p className="stat-card-label">Pending</p>
+              <p className="stat-card-value" style={stats?.pending > 0 ? { color: 'var(--color-vital)' } : {}}>
+                {stats?.pending ?? '\u2014'}
+              </p>
+            </div>
+          </>
+        )}
       </div>
 
       {user?.role === 'ADMIN' && (
