@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import android.content.Intent
 import edu.cit.amihan.medibook.R
 import edu.cit.amihan.medibook.core.network.RetrofitClient
+import edu.cit.amihan.medibook.core.utils.TokenManager
 import edu.cit.amihan.medibook.databinding.ActivityAppointmentHistoryBinding
 import edu.cit.amihan.medibook.feature.appointment.model.AppointmentResponse
 import edu.cit.amihan.medibook.feature.appointment.model.HealthRecordResponse
@@ -62,7 +63,11 @@ class AppointmentHistoryActivity : AppCompatActivity() {
                         if (appointments.isEmpty()) View.VISIBLE else View.GONE
                     binding.tvError.visibility = View.GONE
                 } else if (response.code() == 401) {
-                    showError("Session expired. Please log in again.")
+                    TokenManager.clear()
+                    startActivity(Intent(this@AppointmentHistoryActivity,
+                        edu.cit.amihan.medibook.feature.auth.ui.login.LoginActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    })
                 } else {
                     showError("Failed to load appointments (code ${response.code()}).")
                 }
