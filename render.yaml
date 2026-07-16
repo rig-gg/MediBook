@@ -1,0 +1,38 @@
+services:
+  # ── Backend API ──────────────────────────────────────────────
+  - type: web
+    name: medibook-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: MAIL_HOST
+        sync: false
+      - key: MAIL_PORT
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: CORS_ORIGINS
+        value: https://medibook-web.onrender.com,http://localhost:5173
+
+  # ── Web Frontend (Static Site) ──────────────────────────────
+  - type: static_site
+    name: medibook-web
+    rootDir: web
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://medibook-api.onrender.com/api
