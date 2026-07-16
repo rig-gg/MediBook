@@ -17,6 +17,10 @@ public interface DoctorScheduleRepository extends JpaRepository<DoctorSchedule, 
 
     List<DoctorSchedule> findByIsAvailableTrueOrderByStartTimeAsc();
 
+    boolean existsByDoctorDoctorId(Long doctorId);
+
+    List<DoctorSchedule> findByDoctorDoctorId(Long doctorId);
+
     // Database-level overlap check — prevents loading all rows into memory
     @Query("SELECT COUNT(s) > 0 FROM DoctorSchedule s " +
            "WHERE s.doctor.doctorId = :doctorId " +

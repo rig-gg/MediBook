@@ -5,7 +5,11 @@ import edu.cit.amihan.medibook.clinicstaff.dto.ClinicStaffResponse;
 import edu.cit.amihan.medibook.clinicstaff.entity.ClinicStaff;
 import edu.cit.amihan.medibook.clinicstaff.repository.ClinicStaffRepository;
 import edu.cit.amihan.medibook.common.exception.ResourceNotFoundException;
+import edu.cit.amihan.medibook.user.entity.User;
+import edu.cit.amihan.medibook.user.repository.UserRepository;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -14,9 +18,14 @@ import java.util.List;
 public class ClinicStaffService {
 
     private final ClinicStaffRepository repository;
+    private final UserRepository userRepository;
 
-    public ClinicStaffService(ClinicStaffRepository repository) {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public ClinicStaffService(ClinicStaffRepository repository, UserRepository userRepository) {
         this.repository = repository;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
@@ -62,5 +71,17 @@ public class ClinicStaffService {
         }
 
         return ClinicStaffResponse.fromEntity(repository.save(staff));
+    }
+
+    @Transactional
+    public void deleteStaff(Long staffId) {
+        ClinicStaff staff = repository.findById(staffId)
+                .orElseThrow(() -> new ResourceNotFoundException("Staff not found with id: " + staffId));
+
+        User user = staff.getUser();
+        Long userId = user.getUserId();
+        repository.delete(staff);
+        entityManager.flush();
+        userRepository.deleteById(userId);
     }
 }

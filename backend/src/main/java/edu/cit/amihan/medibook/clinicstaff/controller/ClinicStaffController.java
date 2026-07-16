@@ -4,6 +4,7 @@ import edu.cit.amihan.medibook.clinicstaff.dto.ClinicStaffRequest;
 import edu.cit.amihan.medibook.clinicstaff.dto.ClinicStaffResponse;
 import edu.cit.amihan.medibook.clinicstaff.service.ClinicStaffService;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -44,5 +45,10 @@ public class ClinicStaffController {
     public ClinicStaffResponse updateStaff(@PathVariable Long staffId,
             @RequestBody ClinicStaffRequest request) {
         return service.updateStaff(staffId, request);
+    }
+
+    @DeleteMapping("/{staffId}")
+    public void deleteStaff(@PathVariable Long staffId) {
+        service.deleteStaff(staffId);
     }
 }

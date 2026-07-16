@@ -13,4 +13,8 @@ public interface HealthRecordRepository extends JpaRepository<HealthRecord, Long
     Optional<HealthRecord> findByAppointmentAppointmentId(Long appointmentId);
 
     List<HealthRecord> findByPatientPatientId(Long patientId);
+
+    boolean existsByDoctorDoctorId(Long doctorId);
+
+    boolean existsByPatientPatientId(Long patientId);
 }

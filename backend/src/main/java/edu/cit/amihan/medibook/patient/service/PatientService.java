@@ -1,10 +1,17 @@
 package edu.cit.amihan.medibook.patient.service;
 
+import edu.cit.amihan.medibook.appointment.repository.AppointmentRepository;
 import edu.cit.amihan.medibook.common.exception.ResourceNotFoundException;
 import edu.cit.amihan.medibook.patient.dto.PatientRequest;
 import edu.cit.amihan.medibook.patient.dto.PatientResponse;
 import edu.cit.amihan.medibook.patient.entity.Patient;
 import edu.cit.amihan.medibook.patient.repository.PatientRepository;
+import edu.cit.amihan.medibook.record.repository.HealthRecordRepository;
+import edu.cit.amihan.medibook.user.entity.User;
+import edu.cit.amihan.medibook.user.repository.UserRepository;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,9 +21,21 @@ import java.util.List;
 public class PatientService {
 
     private final PatientRepository patientRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final HealthRecordRepository healthRecordRepository;
+    private final UserRepository userRepository;
 
-    public PatientService(PatientRepository patientRepository) {
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    public PatientService(PatientRepository patientRepository,
+                          AppointmentRepository appointmentRepository,
+                          HealthRecordRepository healthRecordRepository,
+                          UserRepository userRepository) {
         this.patientRepository = patientRepository;
+        this.appointmentRepository = appointmentRepository;
+        this.healthRecordRepository = healthRecordRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
@@ -57,5 +76,24 @@ public class PatientService {
         patient.setAddress(request.getAddress());
 
         return PatientResponse.fromEntity(patientRepository.save(patient));
+    }
+
+    @Transactional
+    public void deletePatient(Long patientId) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with id: " + patientId));
+
+        if (appointmentRepository.existsByPatientPatientId(patientId)) {
+            throw new IllegalStateException("Cannot delete patient with existing appointments.");
+        }
+        if (healthRecordRepository.existsByPatientPatientId(patientId)) {
+            throw new IllegalStateException("Cannot delete patient with existing health records.");
+        }
+
+        User user = patient.getUser();
+        Long userId = user.getUserId();
+        patientRepository.delete(patient);
+        entityManager.flush();
+        userRepository.deleteById(userId);
     }
 }

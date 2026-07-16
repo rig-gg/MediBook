@@ -43,4 +43,9 @@ public class PatientController {
             @Valid @RequestBody PatientRequest request) {
         return ResponseEntity.ok(service.updatePatient(currentUser.getUserId(), request));
     }
+
+    @DeleteMapping("/{patientId}")
+    public void deletePatient(@PathVariable Long patientId) {
+        service.deletePatient(patientId);
+    }
 }

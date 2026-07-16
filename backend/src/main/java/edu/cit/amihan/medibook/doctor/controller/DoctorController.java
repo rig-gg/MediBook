@@ -4,6 +4,7 @@ import edu.cit.amihan.medibook.doctor.dto.DoctorRequest;
 import edu.cit.amihan.medibook.doctor.dto.DoctorResponse;
 import edu.cit.amihan.medibook.doctor.service.DoctorService;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,5 +44,10 @@ public class DoctorController {
     public DoctorResponse updateDoctor(@PathVariable Long doctorId,
             @RequestBody DoctorRequest request) {
         return service.updateDoctor(doctorId, request);
+    }
+
+    @DeleteMapping("/{doctorId}")
+    public void deleteDoctor(@PathVariable Long doctorId) {
+        service.deleteDoctor(doctorId);
     }
 }
