@@ -15,3 +15,7 @@ export const updateStaff = async (staffId, data) => {
   const response = await axiosInstance.put(`/staff/${staffId}`, data);
   return response.data;
 };
+
+export const deleteStaff = async (staffId) => {
+  await axiosInstance.delete(`/staff/${staffId}`);
+};

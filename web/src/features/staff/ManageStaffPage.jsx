@@ -1,8 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
-import { getStaff, updateStaff } from './staffService';
+import { useAuth } from '../../auth/AuthContext';
+import { getStaff, updateStaff, deleteStaff } from './staffService';
 import { inputClasses, labelClasses } from '../../styles/formClasses';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import Toast from '../../components/Toast';
 
 const ManageStaffPage = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const [staffList, setStaffList] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
@@ -10,6 +15,9 @@ const ManageStaffPage = () => {
   const [editingStaff, setEditingStaff] = useState(null);
   const [form, setForm] = useState({ fullName: '', contactNumber: '', position: '' });
   const [saving, setSaving] = useState(false);
+  const [deletingStaff, setDeletingStaff] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -55,10 +63,27 @@ const ManageStaffPage = () => {
       await updateStaff(editingStaff.staffId, form);
       setEditingStaff(null);
       await fetchStaff(search.trim());
+      setToast({ message: `${form.fullName} updated.`, type: 'success' });
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update staff.');
+      setToast({ message: err.response?.data?.message || 'Failed to update staff.', type: 'error' });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const name = deletingStaff.fullName;
+      await deleteStaff(deletingStaff.staffId);
+      setStaffList((prev) => prev.filter((s) => s.staffId !== deletingStaff.staffId));
+      setDeletingStaff(null);
+      setToast({ message: `${name} has been removed.`, type: 'success' });
+    } catch (err) {
+      setDeletingStaff(null);
+      setToast({ message: err.response?.data?.message || 'Failed to delete staff.', type: 'error' });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -119,6 +144,14 @@ const ManageStaffPage = () => {
                 >
                   Edit
                 </button>
+                {isAdmin && (
+                  <button
+                    onClick={() => setDeletingStaff(s)}
+                    className="text-sm text-[var(--color-vital)] hover:text-[#ff5643] font-medium transition"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}
@@ -150,6 +183,16 @@ const ManageStaffPage = () => {
           </div>
         </div>
       )}
+      {deletingStaff && (
+        <ConfirmDialog
+          title="Delete Staff"
+          message={`Delete ${deletingStaff.fullName}? This cannot be undone.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeletingStaff(null)}
+          loading={deleting}
+        />
+      )}
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
     </div>
   );
 };
