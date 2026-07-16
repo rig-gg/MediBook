@@ -21,3 +21,7 @@ export const getDoctorByUserId = async (userId) => {
   const response = await axiosInstance.get(`/doctors/user/${userId}`);
   return response.data;
 };
+
+export const deleteDoctor = async (doctorId) => {
+  await axiosInstance.delete(`/doctors/${doctorId}`);
+};

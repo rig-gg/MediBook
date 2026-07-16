@@ -1,13 +1,27 @@
 import { useState, useEffect, useRef } from 'react';
-import { getDoctors } from './doctorService';
-import { inputClasses } from '../../styles/formClasses';
+import { useAuth } from '../../auth/AuthContext';
+import { getDoctors, updateDoctor, deleteDoctor } from './doctorService';
+import { inputClasses, labelClasses } from '../../styles/formClasses';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import Toast from '../../components/Toast';
 
 const DoctorListPage = () => {
+  const { user } = useAuth();
+  const canManage = user?.role === 'ADMIN' || user?.role === 'STAFF';
+  const isAdmin = user?.role === 'ADMIN';
+
   const [doctors, setDoctors] = useState([]);
   const [specialization, setSpecialization] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const mountedRef = useRef(true);
+
+  const [editingDoctor, setEditingDoctor] = useState(null);
+  const [form, setForm] = useState({ fullName: '', specialization: '', contactNumber: '' });
+  const [saving, setSaving] = useState(false);
+  const [deletingDoctor, setDeletingDoctor] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     mountedRef.current = true;
@@ -23,17 +37,13 @@ const DoctorListPage = () => {
       setDoctors(data);
     } catch (err) {
       if (!mountedRef.current) return;
-      setError(
-        err.response?.data?.message || 'Failed to load doctors. Please try again.'
-      );
+      setError(err.response?.data?.message || 'Failed to load doctors.');
     } finally {
       if (mountedRef.current) setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchDoctors();
-  }, []);
+  useEffect(() => { fetchDoctors(); }, []);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -43,6 +53,46 @@ const DoctorListPage = () => {
   const handleClear = () => {
     setSpecialization('');
     fetchDoctors('');
+  };
+
+  const openEdit = (doctor) => {
+    setEditingDoctor(doctor);
+    setForm({
+      fullName: doctor.fullName || '',
+      specialization: doctor.specialization || '',
+      contactNumber: doctor.contactNumber || '',
+    });
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      await updateDoctor(editingDoctor.doctorId, form);
+      setEditingDoctor(null);
+      await fetchDoctors(specialization.trim());
+      setToast({ message: `${form.fullName} updated.`, type: 'success' });
+    } catch (err) {
+      setToast({ message: err.response?.data?.message || 'Failed to update doctor.', type: 'error' });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const name = deletingDoctor.fullName;
+      await deleteDoctor(deletingDoctor.doctorId);
+      setDoctors((prev) => prev.filter((d) => d.doctorId !== deletingDoctor.doctorId));
+      setDeletingDoctor(null);
+      setToast({ message: `${name} has been removed.`, type: 'success' });
+    } catch (err) {
+      setDeletingDoctor(null);
+      setToast({ message: err.response?.data?.message || 'Failed to delete doctor.', type: 'error' });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -91,14 +141,68 @@ const DoctorListPage = () => {
                 <p className="font-medium text-[var(--color-ink)]">{doc.fullName}</p>
                 <p className="text-sm text-[var(--color-ink-soft)]">{doc.specialization || 'General'}</p>
               </div>
-              <div className="text-right text-sm text-[var(--color-ink-soft)]">
-                <p>{doc.contactNumber}</p>
-                <p>{doc.email}</p>
+              <div className="flex items-center gap-4">
+                <div className="text-right text-sm text-[var(--color-ink-soft)]">
+                  <p>{doc.contactNumber}</p>
+                  <p>{doc.email}</p>
+                </div>
+                {canManage && (
+                  <button
+                    onClick={() => openEdit(doc)}
+                    className="text-sm text-[var(--color-panel-accent)] hover:text-[var(--color-panel)] font-medium transition"
+                  >
+                    Edit
+                  </button>
+                )}
+                {isAdmin && (
+                  <button
+                    onClick={() => setDeletingDoctor(doc)}
+                    className="text-sm text-[var(--color-vital)] hover:text-[#ff5643] font-medium transition"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {editingDoctor && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-xl animate-fade-in-up">
+            <h2 className="text-lg font-semibold text-[var(--color-ink)] mb-4">Edit Doctor</h2>
+            <form onSubmit={handleSave} className="space-y-4">
+              <div>
+                <label className={labelClasses}>Full Name</label>
+                <input type="text" required value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} className={inputClasses} />
+              </div>
+              <div>
+                <label className={labelClasses}>Specialization</label>
+                <input type="text" value={form.specialization} onChange={(e) => setForm({ ...form, specialization: e.target.value })} className={inputClasses} />
+              </div>
+              <div>
+                <label className={labelClasses}>Contact Number</label>
+                <input type="text" value={form.contactNumber} onChange={(e) => setForm({ ...form, contactNumber: e.target.value })} className={inputClasses} />
+              </div>
+              <div className="flex justify-end gap-3 pt-2">
+                <button type="button" onClick={() => setEditingDoctor(null)} className="btn-ghost">Cancel</button>
+                <button type="submit" disabled={saving} className="btn-primary">{saving ? 'Saving...' : 'Save'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+      {deletingDoctor && (
+        <ConfirmDialog
+          title="Delete Doctor"
+          message={`Delete Dr. ${deletingDoctor.fullName}? This cannot be undone.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeletingDoctor(null)}
+          loading={deleting}
+        />
+      )}
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
     </div>
   );
 };
