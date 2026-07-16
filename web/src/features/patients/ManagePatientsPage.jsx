@@ -1,12 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
-import { getPatients } from './patientService';
+import { useAuth } from '../../auth/AuthContext';
+import { getPatients, deletePatient } from './patientService';
 import { inputClasses } from '../../styles/formClasses';
+import ConfirmDialog from '../../components/ConfirmDialog';
+import Toast from '../../components/Toast';
 
 const ManagePatientsPage = () => {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'ADMIN';
   const [patients, setPatients] = useState([]);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [deletingPatient, setDeletingPatient] = useState(null);
+  const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState(null);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -43,6 +51,22 @@ const ManagePatientsPage = () => {
   const handleClear = () => {
     setSearch('');
     fetchPatients('');
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const name = deletingPatient.fullName;
+      await deletePatient(deletingPatient.patientId);
+      setPatients((prev) => prev.filter((p) => p.patientId !== deletingPatient.patientId));
+      setDeletingPatient(null);
+      setToast({ message: `${name} has been removed.`, type: 'success' });
+    } catch (err) {
+      setDeletingPatient(null);
+      setToast({ message: err.response?.data?.message || 'Failed to delete patient.', type: 'error' });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   return (
@@ -91,14 +115,34 @@ const ManagePatientsPage = () => {
                 <p className="font-medium text-[var(--color-ink)]">{p.fullName}</p>
                 <p className="text-sm text-[var(--color-ink-soft)]">{p.email}</p>
               </div>
-              <div className="text-right text-sm text-[var(--color-ink-soft)]">
-                <p>{p.contactNumber || '\u2014'}</p>
-                <p>{p.dateOfBirth || '\u2014'}</p>
+              <div className="flex items-center gap-4">
+                <div className="text-right text-sm text-[var(--color-ink-soft)]">
+                  <p>{p.contactNumber || '\u2014'}</p>
+                  <p>{p.dateOfBirth || '\u2014'}</p>
+                </div>
+                {isAdmin && (
+                  <button
+                    onClick={() => setDeletingPatient(p)}
+                    className="text-sm text-[var(--color-vital)] hover:text-[#ff5643] font-medium transition"
+                  >
+                    Delete
+                  </button>
+                )}
               </div>
             </div>
           ))}
         </div>
       )}
+      {deletingPatient && (
+        <ConfirmDialog
+          title="Delete Patient"
+          message={`Delete ${deletingPatient.fullName}? This cannot be undone.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeletingPatient(null)}
+          loading={deleting}
+        />
+      )}
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
     </div>
   );
 };
