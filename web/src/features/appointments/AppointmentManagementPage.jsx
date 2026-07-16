@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../auth/AuthContext';
 import { getAllAppointments, updateAppointmentStatus, deleteAppointment } from './appointmentService';
 import { getRecordByAppointment } from '../records/recordService';
+import Toast from '../../components/Toast';
 
 const selectClasses =
   'rounded-lg border border-[var(--color-border)] bg-white px-3 py-2.5 text-sm text-[var(--color-ink)] focus:outline-none focus:ring-2 focus:ring-[var(--color-panel-accent)]/40 focus:border-[var(--color-panel-accent)] transition';
@@ -41,8 +42,7 @@ const AppointmentManagementPage = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [actionError, setActionError] = useState('');
-  const [actionSuccess, setActionSuccess] = useState('');
+  const [toast, setToast] = useState(null);
 
   const [detailAppt, setDetailAppt] = useState(null);
   const [detailRecord, setDetailRecord] = useState(null);
@@ -81,30 +81,29 @@ const AppointmentManagementPage = () => {
   };
 
   const handleAction = async (appointmentId, newStatus) => {
-    setActionError('');
-    setActionSuccess('');
     try {
       await updateAppointmentStatus(appointmentId, newStatus);
-      const statusLabel = { CONFIRMED: 'approved', CANCELLED: 'cancelled', COMPLETED: 'completed' };
-      setActionSuccess(
-        `Appointment ${statusLabel[newStatus] || newStatus.toLowerCase()}. Patient has been notified via email (FR-011).`
+      setAppointments((prev) =>
+        prev.map((a) => (a.appointmentId === appointmentId ? { ...a, status: newStatus } : a))
       );
-      fetchAppointments(statusFilter);
+      const statusLabel = { CONFIRMED: 'approved', CANCELLED: 'cancelled', COMPLETED: 'completed' };
+      setToast({
+        message: `Appointment ${statusLabel[newStatus] || newStatus.toLowerCase()}. Patient notified via email.`,
+        type: 'success',
+      });
     } catch (err) {
-      setActionError(err.response?.data?.message || 'Failed to update appointment.');
+      setToast({ message: err.response?.data?.message || 'Failed to update appointment.', type: 'error' });
     }
   };
 
   const handleDelete = async (appointmentId) => {
-    setActionError('');
-    setActionSuccess('');
     try {
       await deleteAppointment(appointmentId);
-      setActionSuccess('Appointment deleted.');
+      setAppointments((prev) => prev.filter((a) => a.appointmentId !== appointmentId));
       setDetailAppt(null);
-      fetchAppointments(statusFilter);
+      setToast({ message: 'Appointment deleted.', type: 'success' });
     } catch (err) {
-      setActionError(err.response?.data?.message || 'Failed to delete appointment.');
+      setToast({ message: err.response?.data?.message || 'Failed to delete appointment.', type: 'error' });
     }
   };
 
@@ -153,14 +152,6 @@ const AppointmentManagementPage = () => {
           <option value="COMPLETED">Completed</option>
         </select>
       </div>
-
-      {actionError && (
-        <p className="text-sm text-[var(--color-vital)] font-medium mb-3">{actionError}</p>
-      )}
-
-      {actionSuccess && (
-        <p className="text-sm text-emerald-600 font-medium mb-3 bg-emerald-50 border border-emerald-200 rounded-lg px-4 py-3">{actionSuccess}</p>
-      )}
 
       {loading && (
         <div className="flex items-center gap-2 text-sm text-[var(--color-ink-soft)]">
@@ -341,6 +332,7 @@ const AppointmentManagementPage = () => {
           </div>
         </div>
       )}
+      {toast && <Toast message={toast.message} type={toast.type} onDismiss={() => setToast(null)} />}
     </div>
   );
 };
