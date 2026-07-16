@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { registerAccount } from '../services/authService';
 import AuthLayout from '../layouts/AuthLayout';
 import { inputClasses, labelClasses } from '../styles/formClasses';
@@ -196,6 +197,10 @@ const AdminRegisterPage = () => {
         >
           {loading ? 'Creating…' : 'Create Account'}
         </button>
+
+        <Link to="/dashboard" className="block text-center text-sm text-[var(--color-panel-accent)] hover:underline mt-2">
+          &larr; Back to Dashboard
+        </Link>
       </form>
     </AuthLayout>
   );

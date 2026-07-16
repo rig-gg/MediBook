@@ -30,9 +30,8 @@ const DashboardLayout = () => {
               )}
               {(user?.role === 'ADMIN' || user?.role === 'STAFF') && (
                 <>
-                  {navLink('/doctors/manage', 'Manage Doctors')}
                   {navLink('/appointments', 'Appointments')}
-                  {navLink('/schedules/new', 'Add Schedule')}
+                  {navLink('/schedules', 'Schedules')}
                 </>
               )}
               {user?.role === 'DOCTOR' && (

@@ -6,7 +6,6 @@ import AdminRegisterPage from '../pages/AdminRegisterPage';
 import ProtectedRoute from '../components/ProtectedRoute';
 import DashboardLayout from '../layouts/DashboardLayout';
 import DoctorListPage from '../features/doctors/DoctorListPage';
-import ManageDoctorsPage from '../features/doctors/ManageDoctorsPage';
 import ManagePatientsPage from '../features/patients/ManagePatientsPage';
 import DoctorRecordsPage from '../features/records/DoctorRecordsPage';
 import DoctorAppointmentQueuePage from '../features/appointments/DoctorAppointmentQueuePage';
@@ -49,14 +48,6 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['ADMIN']}>
               <ManageStaffPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/doctors/manage"
-          element={
-            <ProtectedRoute allowedRoles={['ADMIN', 'STAFF']}>
-              <ManageDoctorsPage />
             </ProtectedRoute>
           }
         />

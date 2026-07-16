@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { getSchedules, updateSchedule } from './scheduleService';
 import { getDoctors } from '../doctors/doctorService';
 import { inputClasses, labelClasses } from '../../styles/formClasses';
@@ -69,9 +70,16 @@ const ManageSchedulesPage = () => {
   return (
     <div className="animate-fade-in-up">
       <div className="dashboard-header">
-        <p className="dashboard-header-eyebrow">Scheduling</p>
-        <h1 className="dashboard-header-title">Manage Schedules</h1>
-        <p className="dashboard-header-subtitle">View and edit doctor availability slots.</p>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="dashboard-header-eyebrow">Scheduling</p>
+            <h1 className="dashboard-header-title">Manage Schedules</h1>
+            <p className="dashboard-header-subtitle">View and edit doctor availability slots.</p>
+          </div>
+          <Link to="/schedules/new" className="btn-accent whitespace-nowrap">
+            + Add Schedule
+          </Link>
+        </div>
       </div>
 
       {message && (
