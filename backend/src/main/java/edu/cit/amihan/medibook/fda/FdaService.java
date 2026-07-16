@@ -21,69 +21,89 @@ public class FdaService {
             return List.of();
         }
 
-        try {
-            String escaped = escapeQuery(diagnosis);
-            String searchQuery = "description:" + escaped;
-            log.debug("OpenFDA query: search={}", searchQuery);
+        String escaped = escapeQuery(diagnosis);
 
+        String searchQuery = "indications_and_usage:" + escaped;
+        log.debug("OpenFDA query: search={}", searchQuery);
+
+        try {
             JsonNode response = fdaWebClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/drug/label.json")
                             .queryParam("search", searchQuery)
-                            .queryParam("limit", 5)
+                            .queryParam("limit", 10)
                             .build())
                     .retrieve()
                     .bodyToMono(JsonNode.class)
                     .block();
 
-            if (response == null) {
-                log.warn("OpenFDA returned null response for '{}'", diagnosis);
-                return List.of();
+            if (response == null || !response.has("results")) {
+                log.warn("OpenFDA returned no results for '{}', retrying with description field", diagnosis);
+                return fallbackSearch(escaped);
             }
 
-            if (!response.has("results")) {
-                log.warn("OpenFDA response has no results for '{}'", diagnosis);
-                return List.of();
-            }
-
-            List<FdaDrugSuggestion> suggestions = new ArrayList<>();
-            for (JsonNode result : response.get("results")) {
-                String brandName = extractFirst(result, "openfda", "brand_name");
-                String genericName = extractFirst(result, "openfda", "generic_name");
-                String route = extractFirst(result, "openfda", "route");
-                String indication = extractFirst(result, "indications_and_usage");
-                if (indication == null) {
-                    indication = extractFirst(result, "description");
-                }
-                if (indication != null && indication.length() > 300) {
-                    indication = indication.substring(0, 300) + "...";
-                }
-
-                if (brandName == null && genericName == null) {
-                    String productElement = extractFirst(result, "spl_product_data_elements");
-                    if (productElement != null) {
-                        String firstLine = productElement.split("\\n")[0].trim();
-                        if (!firstLine.isBlank()) {
-                            genericName = firstLine;
-                        }
-                    }
-                }
-
-                if (brandName != null || genericName != null) {
-                    suggestions.add(new FdaDrugSuggestion(
-                            brandName,
-                            genericName,
-                            route,
-                            indication
-                    ));
-                }
-            }
-
-            return suggestions;
+            return parseResults(response);
         } catch (Exception e) {
-            log.warn("OpenFDA query failed for diagnosis '{}': {}", diagnosis, e.getMessage());
+            log.warn("OpenFDA query failed for '{}': {}", diagnosis, e.getMessage());
             return List.of();
         }
+    }
+
+    private List<FdaDrugSuggestion> fallbackSearch(String escaped) {
+        try {
+            String fallbackQuery = "description:" + escaped;
+            log.debug("OpenFDA fallback query: search={}", fallbackQuery);
+
+            JsonNode response = fdaWebClient.get()
+                    .uri(uriBuilder -> uriBuilder
+                            .path("/drug/label.json")
+                            .queryParam("search", fallbackQuery)
+                            .queryParam("limit", 10)
+                            .build())
+                    .retrieve()
+                    .bodyToMono(JsonNode.class)
+                    .block();
+
+            if (response == null || !response.has("results")) {
+                return List.of();
+            }
+
+            return parseResults(response);
+        } catch (Exception e) {
+            log.warn("OpenFDA fallback query failed: {}", e.getMessage());
+            return List.of();
+        }
+    }
+
+    private List<FdaDrugSuggestion> parseResults(JsonNode response) {
+        List<FdaDrugSuggestion> suggestions = new ArrayList<>();
+        for (JsonNode result : response.get("results")) {
+            String brandName = extractFirst(result, "openfda", "brand_name");
+            String genericName = extractFirst(result, "openfda", "generic_name");
+            String route = extractFirst(result, "openfda", "route");
+            String indication = extractFirst(result, "indications_and_usage");
+            if (indication == null) {
+                indication = extractFirst(result, "description");
+            }
+            if (indication != null && indication.length() > 300) {
+                indication = indication.substring(0, 300) + "...";
+            }
+
+            if (brandName == null && genericName == null) {
+                String productElement = extractFirst(result, "spl_product_data_elements");
+                if (productElement != null) {
+                    String firstLine = productElement.split("\\n")[0].trim();
+                    if (!firstLine.isBlank()) {
+                        genericName = firstLine;
+                    }
+                }
+            }
+
+            if (brandName != null || genericName != null) {
+                suggestions.add(new FdaDrugSuggestion(brandName, genericName, route, indication));
+            }
+        }
+        return suggestions;
     }
 
     private String extractFirst(JsonNode node, String... path) {
