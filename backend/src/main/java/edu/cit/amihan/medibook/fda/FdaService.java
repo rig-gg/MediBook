@@ -17,7 +17,7 @@ import java.util.List;
 public class FdaService {
 
     private final RestTemplate fdaRestTemplate;
-    private final ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     public List<FdaDrugSuggestion> getSuggestions(String diagnosis) {
         if (diagnosis == null || diagnosis.isBlank()) {
