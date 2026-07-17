@@ -19,7 +19,7 @@ object RetrofitClient {
     private val BASE_URL = if (USE_LOCAL) {
         "http://10.0.2.2:8080/"   // local backend (emulator)
     } else {
-        "https://medibook-api.onrender.com/"   // production
+        "https://medibook-api-vmyg.onrender.com/"   // production
     }
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
