@@ -29,7 +29,7 @@ public class FdaService {
         log.debug("OpenFDA query: search={}", searchQuery);
 
         try {
-            String url = UriComponentsBuilder.fromHttpUrl("https://api.fda.gov/drug/label.json")
+            String url = UriComponentsBuilder.fromUriString("https://api.fda.gov/drug/label.json")
                     .queryParam("search", searchQuery)
                     .queryParam("limit", 10)
                     .toUriString();
@@ -54,7 +54,7 @@ public class FdaService {
             String fallbackQuery = "description:" + escaped;
             log.debug("OpenFDA fallback query: search={}", fallbackQuery);
 
-            String url = UriComponentsBuilder.fromHttpUrl("https://api.fda.gov/drug/label.json")
+            String url = UriComponentsBuilder.fromUriString("https://api.fda.gov/drug/label.json")
                     .queryParam("search", fallbackQuery)
                     .queryParam("limit", 10)
                     .toUriString();
