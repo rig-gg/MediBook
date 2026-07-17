@@ -1,10 +1,12 @@
 package edu.cit.amihan.medibook.fda;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +16,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FdaService {
 
-    private final WebClient fdaWebClient;
+    private final RestTemplate fdaRestTemplate;
+    private final ObjectMapper objectMapper;
 
     public List<FdaDrugSuggestion> getSuggestions(String diagnosis) {
         if (diagnosis == null || diagnosis.isBlank()) {
@@ -22,20 +25,17 @@ public class FdaService {
         }
 
         String escaped = escapeQuery(diagnosis);
-
         String searchQuery = "indications_and_usage:" + escaped;
         log.debug("OpenFDA query: search={}", searchQuery);
 
         try {
-            JsonNode response = fdaWebClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/drug/label.json")
-                            .queryParam("search", searchQuery)
-                            .queryParam("limit", 10)
-                            .build())
-                    .retrieve()
-                    .bodyToMono(JsonNode.class)
-                    .block();
+            String url = UriComponentsBuilder.fromHttpUrl("https://api.fda.gov/drug/label.json")
+                    .queryParam("search", searchQuery)
+                    .queryParam("limit", 10)
+                    .toUriString();
+
+            String responseStr = fdaRestTemplate.getForObject(url, String.class);
+            JsonNode response = objectMapper.readTree(responseStr);
 
             if (response == null || !response.has("results")) {
                 log.warn("OpenFDA returned no results for '{}', retrying with description field", diagnosis);
@@ -54,15 +54,13 @@ public class FdaService {
             String fallbackQuery = "description:" + escaped;
             log.debug("OpenFDA fallback query: search={}", fallbackQuery);
 
-            JsonNode response = fdaWebClient.get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/drug/label.json")
-                            .queryParam("search", fallbackQuery)
-                            .queryParam("limit", 10)
-                            .build())
-                    .retrieve()
-                    .bodyToMono(JsonNode.class)
-                    .block();
+            String url = UriComponentsBuilder.fromHttpUrl("https://api.fda.gov/drug/label.json")
+                    .queryParam("search", fallbackQuery)
+                    .queryParam("limit", 10)
+                    .toUriString();
+
+            String responseStr = fdaRestTemplate.getForObject(url, String.class);
+            JsonNode response = objectMapper.readTree(responseStr);
 
             if (response == null || !response.has("results")) {
                 return List.of();
