@@ -48,6 +48,7 @@ medibook/
 ### Auth
 | Method | Endpoint | Access | Purpose |
 |---|---|---|---|
+| GET | `/api/health` | Public | Uptime monitoring on the backend for tapping on Render deployment |
 | POST | `/api/auth/login` | Public | Authenticate any user, returns JWT |
 | POST | `/api/auth/register/patient` | Public | Patient self-registration (mobile) |
 | POST | `/api/admin/register` | ADMIN | Provision STAFF or DOCTOR accounts |
